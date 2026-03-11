@@ -426,6 +426,12 @@ with tab1:
                         progress_bar.empty()
                         st.success(t["result_success"])
                         
+                    elif step == "error":
+                        progress_bar.empty()
+                        st.error(f"⚠️ {content}")
+                        break
+                        
+                    if step == "complete":
                         # Lưu lịch sử
                         st.session_state.history.append({
                             'input': case_input[:100],
@@ -507,7 +513,9 @@ with tab1:
                     use_container_width=True
                 )
             except Exception as e:
-                st.error(f"Lỗi tạo DOCX: {e}")
+                # Log nguyên nhân thật ra console, hiện thông báo dễ hiểu cho user
+                print(f"Lỗi tạo DOCX: {e}")
+                st.error("Rất tiếc, không thể tạo file DOCX lúc này do cấu trúc văn bản quá phức tạp. Vui lòng sử dụng bản Markdown hoặc thử lại sau.")
 
 # ==========================================
 # TAB 2: Phân tích Tài liệu (Upload & Q&A) – Hỗ trợ nhiều file
@@ -613,7 +621,8 @@ with tab2:
                         # Lưu lịch sử
                         st.session_state.qa_history.append({"role": "assistant", "content": full_response})
                     except Exception as e:
-                        error_msg = f"❌ {t['error_occurred']}: {e}"
+                        print(f"Lỗi Q&A: {e}")
+                        error_msg = f"❌ {t['error_occurred']}: Hệ thống đang bận hoặc mất kết nối. Vui lòng thử lại sau."
                         response_placeholder.error(error_msg)
                         st.session_state.qa_history.append({"role": "assistant", "content": error_msg})
 

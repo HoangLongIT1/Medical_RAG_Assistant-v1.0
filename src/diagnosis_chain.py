@@ -158,67 +158,73 @@ def run_diagnosis_chain_stream(
     Phiên bản streaming của chuỗi chẩn đoán.
     Yields từng phần kết quả để hiển thị realtime trên Streamlit.
     """
-    # Bước 0: Safety Check
-    safety_check = safety_guardrail.check(case_input)
-    if not safety_check['is_safe']:
-        yield {"step": "blocked", "content": safety_check['message']}
-        return
-    
-    if safety_check.get('has_warning'):
-        yield {"step": "warning", "content": safety_check['message']}
-    
-    # Bước 1: Phân tích ca bệnh
-    yield {"step": "step1_start", "content": "🔍 **Bước 1:** Đang phân tích ca bệnh..."}
-    case_prompt = CASE_ANALYSIS_PROMPT.format(
-        case_input=case_input,
-        language_instruction=language_instruction
-    )
-    case_analysis = generate_response(case_prompt, temperature=0.2)
-    yield {"step": "step1_done", "content": case_analysis}
-    
-    # Bước 2: RAG retrieval
-    yield {"step": "step2_start", "content": "📚 **Bước 2:** Đang tra cứu phác đồ y tế..."}
-    search_query = f"{case_input}\n{case_analysis}"
-    documents = retrieve_context(query=search_query, specialty=specialty, k=5)
-    context_text = format_context(documents)
-    
-    sources_info = [
-        f"- {doc.metadata.get('source', 'N/A')} ({doc.metadata.get('specialty', '')})"
-        for doc in documents
-    ]
-    yield {"step": "step2_done", "content": "\n".join(sources_info) if sources_info else "Không tìm thấy tài liệu liên quan."}
-    
-    # Bước 3: DDx (Không dùng stream để tránh gãy kết nối API)
-    yield {"step": "step3_start", "content": "🧠 **Bước 3:** Đang lập luận chẩn đoán phân biệt..."}
-    ddx_prompt = DIFFERENTIAL_DIAGNOSIS_PROMPT.format(
-        case_analysis=case_analysis,
-        retrieved_context=context_text,
-        language_instruction=language_instruction
-    )
-    
-    ddx_full = generate_response(ddx_prompt, temperature=0.3)
-    yield {"step": "step3_stream", "content": ddx_full}
-    yield {"step": "step3_done", "content": ddx_full}
-    
-    # Bước 3.5: Kiểm tra tương tác thuốc
-    yield {"step": "step_drug_check", "content": "💊 **Bước 3.5:** Đang kiểm tra tương tác thuốc..."}
-    drug_prompt = DRUG_INTERACTION_PROMPT.format(
-        case_input=case_input,
-        medications=ddx_full,
-        retrieved_context=context_text,
-        language_instruction=language_instruction
-    )
-    drug_warning = generate_response(drug_prompt, temperature=0.1)
-    yield {"step": "drug_warning", "content": drug_warning}
-    
-    # Bước 4: Tóm tắt
-    yield {"step": "step4_start", "content": "📋 **Bước 4:** Đang tạo tóm tắt và khuyến nghị..."}
-    summary_prompt = REPORT_SUMMARY_PROMPT.format(
-        ddx_result=ddx_full,
-        language_instruction=language_instruction
-    )
-    
-    summary_full = generate_response(summary_prompt, temperature=0.2)
-    yield {"step": "step4_stream", "content": summary_full}
-    yield {"step": "step4_done", "content": summary_full}
-    yield {"step": "complete", "content": "✅ Hoàn thành!"}
+    try:
+        # Bước 0: Safety Check
+        safety_check = safety_guardrail.check(case_input)
+        if not safety_check['is_safe']:
+            yield {"step": "blocked", "content": safety_check['message']}
+            return      
+        
+        if safety_check.get('has_warning'):
+            yield {"step": "warning", "content": safety_check['message']}
+        
+        # Bước 1: Phân tích ca bệnh
+        yield {"step": "step1_start", "content": "🔍 **Bước 1:** Đang phân tích ca bệnh..."}
+        case_prompt = CASE_ANALYSIS_PROMPT.format(
+            case_input=case_input,
+            language_instruction=language_instruction
+        )
+        case_analysis = generate_response(case_prompt, temperature=0.2)
+        yield {"step": "step1_done", "content": case_analysis}
+        
+        # Bước 2: RAG retrieval
+        yield {"step": "step2_start", "content": "📚 **Bước 2:** Đang tra cứu phác đồ y tế..."}
+        search_query = f"{case_input}\n{case_analysis}"
+        documents = retrieve_context(query=search_query, specialty=specialty, k=5)
+        context_text = format_context(documents)
+        
+        sources_info = [
+            f"- {doc.metadata.get('source', 'N/A')} ({doc.metadata.get('specialty', '')})"
+            for doc in documents
+        ]
+        yield {"step": "step2_done", "content": "\n".join(sources_info) if sources_info else "Không tìm thấy tài liệu liên quan."}
+        
+        # Bước 3: DDx (Không dùng stream để tránh gãy kết nối API)
+        yield {"step": "step3_start", "content": "🧠 **Bước 3:** Đang lập luận chẩn đoán phân biệt..."}
+        ddx_prompt = DIFFERENTIAL_DIAGNOSIS_PROMPT.format(
+            case_analysis=case_analysis,
+            retrieved_context=context_text,
+            language_instruction=language_instruction
+        )
+        
+        ddx_full = generate_response(ddx_prompt, temperature=0.3)
+        yield {"step": "step3_stream", "content": ddx_full}
+        yield {"step": "step3_done", "content": ddx_full}
+        
+        # Bước 3.5: Kiểm tra tương tác thuốc
+        yield {"step": "step_drug_check", "content": "💊 **Bước 3.5:** Đang kiểm tra tương tác thuốc..."}
+        drug_prompt = DRUG_INTERACTION_PROMPT.format(
+            case_input=case_input,
+            medications=ddx_full,
+            retrieved_context=context_text,
+            language_instruction=language_instruction
+        )
+        drug_warning = generate_response(drug_prompt, temperature=0.1)
+        yield {"step": "drug_warning", "content": drug_warning}
+        
+        # Bước 4: Tóm tắt
+        yield {"step": "step4_start", "content": "📋 **Bước 4:** Đang tạo tóm tắt và khuyến nghị..."}
+        summary_prompt = REPORT_SUMMARY_PROMPT.format(
+            ddx_result=ddx_full,
+            language_instruction=language_instruction
+        )
+        
+        summary_full = generate_response(summary_prompt, temperature=0.2)
+        yield {"step": "step4_stream", "content": summary_full}
+        yield {"step": "step4_done", "content": summary_full}
+        yield {"step": "complete", "content": "✅ Hoàn thành!"}
+
+    except Exception as e:
+        # Bắt toàn bộ lỗi (như lỗi API rate limit, quota exceeded...)
+        print(f"❌ Lỗi hệ thống: {str(e)}")
+        yield {"step": "error", "content": "Rất tiếc! Đã có sự cố kết nối hoặc máy chủ đang bị quá tải. Vui lòng thử lại sau ít phút."}
