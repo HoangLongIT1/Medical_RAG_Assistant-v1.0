@@ -356,6 +356,7 @@ with tab1:
                 # Chạy chain streaming
                 ddx_text_buffer = ""
                 summary_text_buffer = ""
+                drug_warning_buffer = ""
                 step3_text_placeholder = None
                 step4_text_placeholder = None
                 
@@ -413,6 +414,7 @@ with tab1:
                             step4_text_placeholder.markdown(summary_text_buffer)
                     
                     elif step == "drug_warning":
+                        drug_warning_buffer = content
                         if "[Không phát hiện" not in content and "No serious drug interactions" not in content:
                             st.warning(f"### {t['drug_warning_title']}\n\n{content}")
                         else:
@@ -452,6 +454,7 @@ with tab1:
                     st.session_state.last_result = {
                         'ddx_text': ddx_text_buffer,
                         'summary_text': summary_text_buffer,
+                        'drug_warning': drug_warning_buffer,
                         'full_report': full_report,
                         'enriched_input': enriched_input,
                         'selected_specialty': selected_specialty,
@@ -465,6 +468,15 @@ with tab1:
         if not analyze_clicked:
             st.divider()
             st.markdown(f"## 📊 {t['analysis_results']}")
+            
+            # Khôi phục cảnh báo thuốc nếu có
+            if result.get('drug_warning'):
+                warning_content = result['drug_warning']
+                if "[Không phát hiện" not in warning_content and "No serious drug interactions" not in warning_content:
+                    st.warning(f"### {t['drug_warning_title']}\n\n{warning_content}")
+                else:
+                    st.info(f"💡 {t['no_drug_warning']}")
+            
             with st.container():
                 st.markdown(f"### 🧠 {t['ddx_title']}")
                 st.markdown(result['ddx_text'])
