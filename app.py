@@ -457,11 +457,24 @@ with tab1:
                         'selected_specialty': selected_specialty,
                     }
     
-    # ── Nút xuất báo cáo (hiển thị nếu có kết quả trong session_state) ──
+    # ── Hiển thị kết quả (từ session_state nếu không phải lần chạy phân tích) ──
     if st.session_state.get('last_result'):
         result = st.session_state.last_result
+        
+        # Nếu không phải vừa bấm nút phân tích (trong lúc stream đã hiện rồi) thì in lại từ cache
+        if not analyze_clicked:
+            st.divider()
+            st.markdown(f"## 📊 {t['analysis_results']}")
+            with st.container():
+                st.markdown(f"### 🧠 {t['ddx_title']}")
+                st.markdown(result['ddx_text'])
+            with st.container():
+                st.markdown(f"### 📝 {t['summary_title']}")
+                st.markdown(result['summary_text'])
+                
         st.divider()
         
+        # ── Nút xuất báo cáo ──
         col_dl1, col_dl2 = st.columns(2)
         with col_dl1:
             st.download_button(
