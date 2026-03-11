@@ -14,7 +14,6 @@ python-docx>=1.0.0
 
 # ── UI ────────────────────────────────────
 streamlit>=1.38.0
-streamlit-mic-recorder
 
 # ── PDF Export ────────────────────────────
 reportlab>=4.0

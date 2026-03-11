@@ -188,37 +188,6 @@ Nhiệm vụ của bạn là trả lời các câu hỏi dựa trên nội dung 
 4. Trả lời chuyên nghiệp, sử dụng markdown để làm nổi bật (in đậm, in nghiêng) các điểm cốt lõi.
 """
 
-def transcribe_audio(audio_bytes: bytes, language_instruction: str = "") -> str:
-    """
-    Sử dụng Gemini để chuyển đổi âm thanh y khoa thành văn bản.
-    """
-    client = get_client()
-    
-    # Prompt cho việc STT y khoa
-    stt_prompt = f"""Bạn là chuyên gia thư ký y khoa. Hãy nghe kỹ đoạn âm thanh này và chuyển nó thành văn bản (transcription).
-{language_instruction}
-Yêu cầu:
-1. Ghi lại chính xác các thuật ngữ y tế, tên thuốc, liều lượng.
-2. Sửa các lỗi phát âm rõ ràng nhưng giữ nguyên ý nghĩa lâm sàng.
-3. Trả về DUY NHẤT nội dung văn bản đã được chuyển đổi.
-4. Nếu không có tiếng người hoặc không nghe rõ, hãy trả về: "[Không nghe rõ nội dung y tế]"
-    """
-    
-    try:
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=[
-                types.Part.from_bytes(data=audio_bytes, mime_type="audio/wav"),
-                stt_prompt
-            ],
-            config=types.GenerateContentConfig(
-                temperature=0.0, # Cần độ chính xác cao nhất
-            )
-        )
-        return response.text.strip()
-    except Exception as e:
-        print(f"❌ Lỗi STT: {e}")
-        return f"[Lỗi chuyển đổi giọng nói: {str(e)}]"
 
 def answer_document_question_stream(context: str, question: str, language_instruction: str = "", temperature: float = 0.2):
     """

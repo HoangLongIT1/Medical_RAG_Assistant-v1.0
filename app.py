@@ -18,12 +18,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.diagnosis_chain import run_diagnosis_chain, run_diagnosis_chain_stream
-from src.llm_agent import answer_document_question_stream, transcribe_audio
+from src.llm_agent import answer_document_question_stream
 from scripts.parse_docs import extract_text_from_pdf, extract_text_from_docx
 from src.i18n import LANG
 from src.docx_exporter import markdown_to_docx_bytes
 from src.sample_cases import SAMPLE_CASE_BANK, CATEGORY_ORDER_ROW1, CATEGORY_ORDER_ROW2, get_random_case
-from streamlit_mic_recorder import mic_recorder
 
 
 # ── Cấu hình trang ────────────────────────────────────────
@@ -228,7 +227,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ── Tabs ──────────────────────────────────────────────────
-tab1, tab2, tab3 = st.tabs([t["tab_rag"], t["tab_doc"], t["tab_dash"]])
+tab1, tab2 = st.tabs([t["tab_rag"], t["tab_doc"]])
 
 # ==========================================
 # TAB 1: Hệ thống RAG gốc
@@ -289,29 +288,7 @@ with tab1:
             key="case_input"
         )
         
-        # 🎙️ Nút ghi âm giọng nói
-        col_mic, col_status = st.columns([1, 4])
-        with col_mic:
-            audio = mic_recorder(
-                start_prompt=t["voice_rec_label"],
-                stop_prompt="⏹️",
-                key='recorder',
-                use_container_width=True
-            )
-        
-        if audio:
-            with col_status:
-                with st.spinner(t["voice_processing"]):
-                    transcribed_text = transcribe_audio(audio['bytes'], language_instruction=t["prompt_instruction"])
-                    if transcribed_text and "[Không nghe rõ" not in transcribed_text:
-                        # Append to current input
-                        if st.session_state.case_input:
-                            st.session_state.case_input += " " + transcribed_text
-                        else:
-                            st.session_state.case_input = transcribed_text
-                        st.rerun()
-                    elif "[Không nghe rõ" in transcribed_text:
-                        st.warning(transcribed_text)
+
         
         col_a, col_b, col_c = st.columns(3)
         with col_a:
@@ -625,73 +602,6 @@ with tab2:
                         error_msg = f"❌ {t['error_occurred']}: Hệ thống đang bận hoặc mất kết nối. Vui lòng thử lại sau."
                         response_placeholder.error(error_msg)
                         st.session_state.qa_history.append({"role": "assistant", "content": error_msg})
-
-# ==========================================
-# TAB 3: Dashboard & Thống Kê
-# ==========================================
-with tab3:
-    st.markdown(f"## 📊 {t['dash_title']}")
-    st.markdown(t['dash_desc'])
-    
-    # Tính toán Metrics
-    total_cases = len(st.session_state.history)
-    
-    # Dummy data nếu chưa có thật để demo đẹp
-    history_data = st.session_state.history.copy()
-    if len(history_data) == 0:
-        history_data = [
-            {"specialty": t["cardiology"], "time": "08:15 10/03", "input": "Bệnh nhân nhịp chậm 40 l/p, HA 85/50...", "ddx": "Suy tim cấp"},
-            {"specialty": t["endocrinology"], "time": "09:30 10/03", "input": "Đường huyết đói 7.5, HbA1c 6.8...", "ddx": "Đái tháo đường T2"},
-            {"specialty": t["respiratory"], "time": "10:45 10/03", "input": "Khó thở mMRC 2, tiền sử 2 đợt cấp COPD...", "ddx": "COPD Nhóm D"}
-        ]
-        
-    df = pd.DataFrame(history_data)
-    
-    # ── Metrics Row ──
-    met1, met2, met3 = st.columns(3)
-    with met1:
-        st.metric(label=t["dash_total"], value=total_cases if total_cases > 0 else 3)
-    with met2:
-        st.metric(label=t["dash_data"], value="424 Chunks", delta="3 Protocols")
-    with met3:
-        st.metric(label=t["dash_speed"], value="1.2s", delta="-0.3s")
-    st.divider()
-    
-    # ── Charts Row ──
-    chart_col, data_col = st.columns([1, 1.5])
-    
-    with chart_col:
-        st.markdown(f"### {t['chart_title']}")
-        if not df.empty and "specialty" in df.columns:
-            spec_counts = df["specialty"].value_counts()
-            st.bar_chart(spec_counts, color="#0284c7")
-        else:
-            st.info(t["insufficient_data"])
-            
-    with data_col:
-        st.markdown(f"### {t['table_title']}")
-        if not df.empty:
-            st.dataframe(
-                df[["time", "specialty", "input"]], 
-                use_container_width=True,
-                column_config={
-                    "time": "Thời gian",
-                    "specialty": "Chuyên khoa",
-                    "input": "Nội dung Input"
-                }
-            )
-        else:
-            st.info(t["no_cases_yet"])
-            
-    st.divider()
-    if not df.empty:
-        csv = df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label=t["btn_export_csv"],
-            data=csv,
-            file_name=f'clinical_history_{datetime.now().strftime("%Y%m%d")}.csv',
-            mime='text/csv',
-        )
 
 # ── Footer disclaimer ─────────────────────────────────────
 st.divider()
