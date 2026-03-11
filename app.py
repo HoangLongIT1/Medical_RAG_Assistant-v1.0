@@ -22,6 +22,8 @@ from src.llm_agent import answer_document_question_stream, transcribe_audio
 from scripts.parse_docs import extract_text_from_pdf, extract_text_from_docx
 from src.i18n import LANG
 from src.pdf_exporter import markdown_to_pdf_bytes
+from src.docx_exporter import markdown_to_docx_bytes
+from src.sample_cases import SAMPLE_CASE_BANK, CATEGORY_ORDER_ROW1, CATEGORY_ORDER_ROW2, get_random_case
 from streamlit_mic_recorder import mic_recorder
 
 
@@ -213,53 +215,6 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 
-# ── Dữ liệu Ca bệnh Mẫu ────────────────────────────────────
-SAMPLE_CASES = {
-    "Nội tiết (ĐTĐ type 2)": {
-        "text": "Bệnh nhân nam đi khám sức khỏe định kỳ. Kết quả xét nghiệm đường huyết đói (FPG) là 7.5 mmol/L. Xét nghiệm HbA1c là 6.8%. Bệnh nhân không có triệu chứng kinh điển của đái tháo đường như ăn nhiều, uống nhiều, tiểu nhiều. Hỏi bệnh nhân này đã đủ tiêu chuẩn chẩn đoán Đái tháo đường type 2 theo quy định chưa?",
-        "age": 45,
-        "sex": "Nam",
-        "specialty": "Nội tiết - Chuyển hóa"
-    },
-    "Hô hấp (COPD)": {
-        "text": "Bệnh nhân nữ, có tiền sử hút thuốc lá nhiều năm. Khám lâm sàng thấy điểm mMRC là 2, CAT là 15. Trong năm qua, bệnh nhân có 2 đợt cấp phải nhập viện điều trị COPD. Cần phân loại nhóm bệnh nhân này theo ABCD và hướng dẫn dùng thuốc giãn phế quản ban đầu như thế nào?",
-        "age": 65,
-        "sex": "Nữ",
-        "specialty": "Hô hấp"
-    },
-    "Tim mạch (Suy tim cấp)": {
-        "text": "Bệnh nhân nam. Tiền sử suy tim HFrEF (phân suất tống máu giảm, EF 35%). Đang dùng thuốc chẹn beta giao cảm (Bisoprolol). Hôm nay nhập viện vì nhịp tim rất chậm (40 l/p), huyết áp 85/50 mmHg, tay chân lạnh, khó thở nhiều. Có nên tăng liều thuốc chẹn beta để giảm nhịp tim cho bệnh nhân không?",
-        "age": 70,
-        "sex": "Nam",
-        "specialty": "Tim mạch"
-    },
-    "Tim mạch + Hô hấp": {
-        "text": "Bệnh nhân vào viện vì khó thở dữ dội, vã mồ hôi, ngồi thở. Bệnh nhân ho khạc đờm trắng trong, không sốt. Khám lâm sàng: Huyết áp 170/100 mmHg, nhịp tim nhanh 115 lần/phút. Phổi nghe có ran rít, ran ngáy rải rác và ít ran ẩm ở hai đáy phổi. Siêu âm tim nhanh tại giường thấy thành trước thất trái giảm động, LVEF 40%. Nguyên nhân chính gây khó thở đợt này là Đợt cấp COPD hay Phù phổi cấp do Suy tim cấp?",
-        "age": 68,
-        "sex": "Nam",
-        "specialty": "Tự động nhận diện"
-    },
-    "Tim mạch + Nội tiết": {
-        "text": "Bệnh nhân có tiền sử Tăng huyết áp 5 năm đang điều trị Amlodipin. Gần đây ăn nhiều, hay khát và sụt 3kg/tháng. HbA1c 7.2%, FPG 8.1 mmol/L. Khám tim có Tiếng ngựa phi T3, siêu âm tim LVEF 45%, tĩnh mạch cổ nổi. Cần chẩn đoán xác định các bệnh lý nào trên bệnh nhân này?",
-        "age": 55,
-        "sex": "Nữ",
-        "specialty": "Tự động nhận diện"
-    },
-    "Hô hấp + Nội tiết": {
-        "text": "Bệnh nhân ho kéo dài 2 tuần nay, khạc đờm đục, khó thở nhẹ (mMRC 1). Tiền sử hút thuốc 20 năm, BMI 29. Khám sức khỏe tình cờ phát hiện đường máu đói 8.5 mmol/L, chưa có chẩn đoán tiểu đường trước đây. Bệnh nhân có dấu hiệu đợt cấp COPD không? Tư vấn chẩn đoán đái tháo đường như thế nào?",
-        "age": 62,
-        "sex": "Nam",
-        "specialty": "Tự động nhận diện"
-    },
-    "Tim, Hô hấp & Nội tiết": {
-        "text": "Bệnh nhân ĐTĐ type 2 (15 năm), suy tim mạn LVEF 30% (đang dùng Bisoprolol, Enalapril), COPD (nhóm C). Nhập viện vì khó thở kịch phát về đêm, ho có đờm bọt hồng, SpO2 88%. Huyết áp 160/90, mạch 105 l/p. Đường huyết mao mạch 18 mmol/L. Chẩn đoán nào là khả dĩ nhất cho tình trạng cấp cứu này?",
-        "age": 72,
-        "sex": "Nam",
-        "specialty": "Tự động nhận diện"
-    }
-}
-
-
 # ── Main Content ───────────────────────────────────────────
 
 # Cập nhật lại t sau khi người dùng có thể thay đổi ngôn ngữ trong sidebar
@@ -281,9 +236,8 @@ tab1, tab2, tab3 = st.tabs([t["tab_rag"], t["tab_doc"], t["tab_dash"]])
 # ==========================================
 with tab1:
 
-
     # ── Form nhập ca bệnh ─────────────────────────────────────
-    # Bộ ca bệnh mẫu
+    # Bộ ca bệnh mẫu (Ngẫu nhiên)
     st.markdown(f"<p style='font-size: 0.95rem; color: #475569; margin-bottom: 0.5rem;'><b>{t['demo_cases']}</b></p>", unsafe_allow_html=True)
     
     # Khởi tạo các giá trị default vào session_state từ đầu vòng đời
@@ -296,21 +250,34 @@ with tab1:
     if "sex" not in st.session_state:
         st.session_state.sex = t['sex_options'][0]
 
-    # Callback update session state
-    def load_sample(case_data):
+    # Callback load ca bệnh ngẫu nhiên từ ngân hàng
+    def load_random_sample(category: str):
+        case_data = get_random_case(category)
         st.session_state.case_input = case_data["text"]
         st.session_state.specialty = case_data["specialty"]
         st.session_state.age = case_data["age"]
         st.session_state.sex = case_data["sex"]
     
-    # Render các nút Load ca mẫu
-    sample_cols = st.columns(len(SAMPLE_CASES))
-    for idx, (case_name, case_data) in enumerate(SAMPLE_CASES.items()):
-        sample_cols[idx].button(
-            case_name, 
-            on_click=load_sample, 
-            args=(case_data,), 
-            key=f"btn_{idx}"
+    # Render nút ca mẫu — Hàng 1: 3 ô đơn khoa
+    row1_cols = st.columns(3)
+    for idx, category in enumerate(CATEGORY_ORDER_ROW1):
+        row1_cols[idx].button(
+            category,
+            on_click=load_random_sample,
+            args=(category,),
+            key=f"sample_r1_{idx}",
+            use_container_width=True,
+        )
+    
+    # Render nút ca mẫu — Hàng 2: 4 ô hỗn hợp
+    row2_cols = st.columns(4)
+    for idx, category in enumerate(CATEGORY_ORDER_ROW2):
+        row2_cols[idx].button(
+            category,
+            on_click=load_random_sample,
+            args=(category,),
+            key=f"sample_r2_{idx}",
+            use_container_width=True,
         )
 
     with st.container(border=True):
@@ -370,20 +337,18 @@ with tab1:
         st.markdown("<br>", unsafe_allow_html=True)
         analyze_clicked = st.button(t['btn_analyze'], type="primary")
     
+    # ── Xử lý phân tích khi nhấn nút ─────────────────────────
     if analyze_clicked:
-            if not case_input.strip():
-                st.error(t["error_empty_input"])
-            elif not os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY") == "your_api_key_here":
-                st.error(t["error_api_key"])
-            else:
-                st.divider()
-                st.markdown(f"## 📊 {t['analysis_results']}")
+        if not case_input.strip():
+            st.error(t["error_empty_input"])
+        elif not os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY") == "your_api_key_here":
+            st.error(t["error_api_key"])
+        else:
+            st.divider()
+            st.markdown(f"## 📊 {t['analysis_results']}")
             
             # Streaming output
             with st.spinner(""):
-                # Progress steps
-                step_container = st.container()
-                
                 # Containers cho mỗi bước
                 step1_placeholder = st.empty()
                 step2_placeholder = st.empty()
@@ -462,7 +427,6 @@ with tab1:
                         st.success(t["result_success"])
                         
                         # Lưu lịch sử
-                        from datetime import datetime
                         st.session_state.history.append({
                             'input': case_input[:100],
                             'specialty': selected_specialty or t["auto_detect_specialty_short"],
@@ -470,11 +434,8 @@ with tab1:
                             'ddx': ddx_text_buffer[:200]
                         })
                 
-                # Nút xuất báo cáo
+                # Lưu kết quả vào session_state để giữ kết quả khi nhấn nút tải xuống
                 if ddx_text_buffer:
-                    st.divider()
-                    
-                    # Tạo full report text
                     full_report = f"""# 📋 {t['report_title']}
 **{t['report_specialty']}:** {selected_specialty or t['auto_detect_specialty_short']}
 
@@ -490,77 +451,120 @@ with tab1:
 ---
 ⚕️ *{t['disclaimer']}*
 """
-                    
-                    col_dl1, col_dl2 = st.columns(2)
-                    with col_dl1:
-                        st.download_button(
-                            label=t["btn_dl_md"],
-                            data=full_report,
-                            file_name=f'bao_cao_cdpb_{datetime.now().strftime("%Y%m%d_%H%M")}.md',
-                            mime='text/markdown',
-                            use_container_width=True
-                        )
-                    with col_dl2:
-                        # Nút xuất file PDF
-                        try:
-                            pdf_bytes = markdown_to_pdf_bytes(full_report, title=t["report_title_short"])
-                            st.download_button(
-                                label=t["btn_dl_pdf"],
-                                data=pdf_bytes,
-                                file_name=f'bao_cao_cdpb_{datetime.now().strftime("%Y%m%d_%H%M")}.pdf',
-                                mime='application/pdf',
-                                use_container_width=True
-                            )
-                        except Exception as e:
-                            st.error(f"{t['pdf_error']}: {e}")
+                    st.session_state.last_result = {
+                        'ddx_text': ddx_text_buffer,
+                        'summary_text': summary_text_buffer,
+                        'full_report': full_report,
+                        'enriched_input': enriched_input,
+                        'selected_specialty': selected_specialty,
+                    }
     
-    # ==========================================
-# TAB 2: Phân tích Tài liệu Đơn lẻ (Upload & Q&A)
+    # ── Nút xuất báo cáo (hiển thị nếu có kết quả trong session_state) ──
+    if st.session_state.get('last_result'):
+        result = st.session_state.last_result
+        st.divider()
+        
+        col_dl1, col_dl2, col_dl3 = st.columns(3)
+        with col_dl1:
+            st.download_button(
+                label=t["btn_dl_md"],
+                data=result['full_report'],
+                file_name=f'bao_cao_cdpb_{datetime.now().strftime("%Y%m%d_%H%M")}.md',
+                mime='text/markdown',
+                use_container_width=True
+            )
+        with col_dl2:
+            try:
+                pdf_bytes = markdown_to_pdf_bytes(result['full_report'], title=t["report_title_short"])
+                st.download_button(
+                    label=t["btn_dl_pdf"],
+                    data=pdf_bytes,
+                    file_name=f'bao_cao_cdpb_{datetime.now().strftime("%Y%m%d_%H%M")}.pdf',
+                    mime='application/pdf',
+                    use_container_width=True
+                )
+            except Exception as e:
+                st.error(f"{t['pdf_error']}: {e}")
+        with col_dl3:
+            try:
+                docx_bytes = markdown_to_docx_bytes(result['full_report'], title=t["report_title_short"])
+                st.download_button(
+                    label=t["btn_dl_docx"],
+                    data=docx_bytes,
+                    file_name=f'bao_cao_cdpb_{datetime.now().strftime("%Y%m%d_%H%M")}.docx',
+                    mime='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    use_container_width=True
+                )
+            except Exception as e:
+                st.error(f"Lỗi tạo DOCX: {e}")
+
+# ==========================================
+# TAB 2: Phân tích Tài liệu (Upload & Q&A) – Hỗ trợ nhiều file
 # ==========================================
 with tab2:
     with st.container(border=True):
         st.markdown(f"<h3 style='margin-top:0; color:#0f172a;'>{t['doc_upload_title']}</h3>", unsafe_allow_html=True)
         st.info(t["doc_upload_info"])
         
-        uploaded_file = st.file_uploader(
+        uploaded_files = st.file_uploader(
             t["doc_upload_label"],
-            type=["pdf", "docx"]
+            type=["pdf", "docx"],
+            accept_multiple_files=True
         )
     
     # Session state variables cho Tab 2
     if "doc_content" not in st.session_state:
         st.session_state.doc_content = ""
-    if "doc_name" not in st.session_state:
-        st.session_state.doc_name = ""
+    if "doc_names" not in st.session_state:
+        st.session_state.doc_names = []
     if "qa_history" not in st.session_state:
         st.session_state.qa_history = []
         
-    if uploaded_file is not None:
-        # Nếu đổi file tải lên thì reset state
-        if st.session_state.doc_name != uploaded_file.name:
+    if uploaded_files:
+        # Lấy danh sách tên file hiện tại
+        current_file_names = sorted([f.name for f in uploaded_files])
+        prev_file_names = sorted(st.session_state.doc_names)
+        
+        # Nếu danh sách file thay đổi -> xử lý lại
+        if current_file_names != prev_file_names:
             with st.spinner(t["doc_reading"]):
-                file_extension = uploaded_file.name.split('.')[-1].lower()
+                all_texts = []
+                file_info_list = []
                 
-                # Cần ghi file tạm để thư viện đọc
-                temp_path = f"temp_upload.{file_extension}"
-                with open(temp_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
+                for uploaded_file in uploaded_files:
+                    file_extension = uploaded_file.name.split('.')[-1].lower()
                     
-                # Trích xuất text
-                if file_extension == "pdf":
-                    text_content = extract_text_from_pdf(temp_path)
-                else:
-                    text_content = extract_text_from_docx(temp_path)
+                    # Ghi file tạm để thư viện đọc
+                    temp_path = f"temp_upload_{uploaded_file.name}"
+                    with open(temp_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
                     
-                # Clean up
-                if os.path.exists(temp_path):
-                    os.remove(temp_path)
+                    # Trích xuất text
+                    if file_extension == "pdf":
+                        text_content = extract_text_from_pdf(temp_path)
+                    else:
+                        text_content = extract_text_from_docx(temp_path)
+                    
+                    # Clean up
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+                    
+                    all_texts.append(f"\n\n--- [{uploaded_file.name}] ---\n\n{text_content}")
+                    file_info_list.append(f"• **{uploaded_file.name}** ({len(text_content):,} {t['characters']})")
                 
-                st.session_state.doc_content = text_content
-                st.session_state.doc_name = uploaded_file.name
-                st.session_state.qa_history = [] # Xóa lịch sử chat cũ
-                
-        st.success(f"✅ {t['doc_upload_success']}: **{uploaded_file.name}** ({len(st.session_state.doc_content)} {t['characters']})")
+                st.session_state.doc_content = "\n".join(all_texts)
+                st.session_state.doc_names = current_file_names
+                st.session_state.qa_history = []  # Reset lịch sử chat
+        
+        # Hiển thị thông tin các file đã tải
+        total_chars = len(st.session_state.doc_content)
+        num_files = len(st.session_state.doc_names)
+        st.success(f"✅ {t['doc_multi_loaded']} **{num_files}** {t['doc_files_count']} ({total_chars:,} {t['doc_total_chars']})")
+        
+        if num_files > 1:
+            with st.expander(f"📂 Danh sách {num_files} file", expanded=False):
+                for fname in st.session_state.doc_names:
+                    st.markdown(f"• {fname}")
         
         # Phần giao diện Chat
         st.divider()
@@ -609,8 +613,7 @@ with tab3:
     st.markdown(f"## 📊 {t['dash_title']}")
     st.markdown(t['dash_desc'])
     
-    # Tính toán Metics
-    
+    # Tính toán Metrics
     total_cases = len(st.session_state.history)
     
     # Dummy data nếu chưa có thật để demo đẹp

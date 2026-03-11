@@ -15,3 +15,5 @@ Dự án hiện tại đã có nền tảng rất vững về RAG (Tìm kiếm t
 *   **Tính toán thang điểm lâm sàng:** Tích hợp các công cụ tính điểm tự động như thang điểm SOFA (nhiễm trùng huyết), CHA2DS2-VASc (nguy cơ đột quỵ), hoặc GOLD (COPD) ngay trong luồng hội thoại.
 *   **Gợi ý mã ICD-10:** Sau khi đưa ra chẩn đoán, AI có thể tự động gợi ý mã ICD-10 tương ứng để bác sĩ điền vào hồ sơ bệnh án nhanh hơn.
 
+
+

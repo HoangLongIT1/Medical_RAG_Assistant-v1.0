@@ -51,6 +51,7 @@ LANG = {
         # ── Tab 1: Report download ──
         "btn_dl_md": "📥 Tải Báo Cáo (Markdown)",
         "btn_dl_pdf": "📥 Tải Báo Cáo (PDF)",
+        "btn_dl_docx": "📥 Tải Báo Cáo (DOCX)",
         "report_title": "Báo Cáo Chẩn Đoán Phân Biệt",
         "report_title_short": "Báo Cáo CĐPB",
         "report_specialty": "Chuyên khoa",
@@ -62,7 +63,10 @@ LANG = {
 
         # ── Tab 2: Document Q&A ──
         "doc_upload_title": "📄 Tải lên Tài liệu Phác đồ Cá nhân hóa",
-        "doc_upload_info": "Hệ thống hỗ trợ đọc và tương tác trực tiếp nội dung các phác đồ định dạng PDF/DOCX (Tối đa 200MB).",
+        "doc_upload_info": "Hệ thống hỗ trợ đọc và tương tác trực tiếp nội dung các phác đồ định dạng PDF/DOCX. Có thể tải lên nhiều file cùng lúc (Tối đa 20 file, mỗi file ≤ 100MB).",
+        "doc_multi_loaded": "Đã tải và đọc xong",
+        "doc_files_count": "file",
+        "doc_total_chars": "tổng ký tự",
         "doc_upload_label": "Tải lên tài liệu y khoa:",
         "doc_reading": "Đang đọc nội dung tài liệu...",
         "doc_upload_success": "Đã tải và đọc xong tài liệu",
@@ -146,6 +150,7 @@ LANG = {
         # ── Tab 1: Report download ──
         "btn_dl_md": "📥 Download Report (Markdown)",
         "btn_dl_pdf": "📥 Download Report (PDF)",
+        "btn_dl_docx": "📥 Download Report (DOCX)",
         "report_title": "Differential Diagnosis Report",
         "report_title_short": "DDx Report",
         "report_specialty": "Specialty",
@@ -157,7 +162,10 @@ LANG = {
 
         # ── Tab 2: Document Q&A ──
         "doc_upload_title": "📄 Upload Personalized Protocol Documents",
-        "doc_upload_info": "Supports reading and interacting with PDF/DOCX protocol documents (Max 200MB).",
+        "doc_upload_info": "Supports reading and interacting with PDF/DOCX protocol documents. You can upload multiple files at once (Max 20 files, each ≤ 100MB).",
+        "doc_multi_loaded": "Loaded and processed",
+        "doc_files_count": "file(s)",
+        "doc_total_chars": "total characters",
         "doc_upload_label": "Upload medical document:",
         "doc_reading": "Reading document content...",
         "doc_upload_success": "Document loaded and processed",
