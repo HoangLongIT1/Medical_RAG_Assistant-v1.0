@@ -21,7 +21,6 @@ from src.diagnosis_chain import run_diagnosis_chain, run_diagnosis_chain_stream
 from src.llm_agent import answer_document_question_stream, transcribe_audio
 from scripts.parse_docs import extract_text_from_pdf, extract_text_from_docx
 from src.i18n import LANG
-from src.pdf_exporter import markdown_to_pdf_bytes
 from src.docx_exporter import markdown_to_docx_bytes
 from src.sample_cases import SAMPLE_CASE_BANK, CATEGORY_ORDER_ROW1, CATEGORY_ORDER_ROW2, get_random_case
 from streamlit_mic_recorder import mic_recorder
@@ -348,10 +347,9 @@ with tab1:
             st.markdown(f"## 📊 {t['analysis_results']}")
             
             # Streaming output
-            with st.spinner(""):
+            with st.spinner(t.get('step_analysis', "Đang chuẩn bị...")):
                 # Containers cho mỗi bước
-                step1_placeholder = st.empty()
-                step2_placeholder = st.empty()
+                progress_bar = st.progress(5, text="Khởi động quá trình phân tích...")
                 step3_container = st.container()
                 step4_container = st.container()
                 
@@ -373,24 +371,20 @@ with tab1:
                         st.markdown(f'<div class="safety-warning">{content}</div>', unsafe_allow_html=True)
                     
                     elif step == "step1_start":
-                        step1_placeholder.info(t['step_analysis'])
+                        progress_bar.progress(15, text=t.get('step_analysis', "Đang phân tích ca bệnh..."))
                     
                     elif step == "step1_done":
-                        step1_placeholder.empty()
-                        with st.expander(t["step1_title"], expanded=False):
-                            st.markdown(content)
+                        pass
                     
                     elif step == "step2_start":
-                        step2_placeholder.info(t['step_search'])
+                        progress_bar.progress(35, text=t.get('step_search', "Đang tra cứu phác đồ..."))
                     
                     elif step == "step2_done":
-                        step2_placeholder.empty()
-                        with st.expander(t["step2_title"], expanded=False):
-                            st.markdown(content if content else t["no_sources_found"])
+                        pass
                     
                     elif step == "step3_start":
+                        progress_bar.progress(55, text=t.get('step_ddx', "Đang lập luận chẩn đoán phân biệt..."))
                         with step3_container:
-                            st.markdown(f'<span class="step-badge running">{t["step_ddx"]}</span>', unsafe_allow_html=True)
                             st.markdown(f"### 🧠 {t['ddx_title']}")
                             step3_text_placeholder = st.empty()
                     
@@ -404,6 +398,7 @@ with tab1:
                             step3_text_placeholder.markdown(ddx_text_buffer)
                     
                     elif step == "step4_start":
+                        progress_bar.progress(85, text="Đang tổng hợp khuyến nghị...")
                         with step4_container:
                             st.markdown(f"### 📝 {t['summary_title']}")
                             step4_text_placeholder = st.empty()
@@ -424,6 +419,9 @@ with tab1:
                             st.info(f"💡 {t['no_drug_warning']}")
                     
                     elif step == "complete":
+                        progress_bar.progress(100, text=t.get('result_success', "Hoàn thành!"))
+                        time.sleep(0.5)
+                        progress_bar.empty()
                         st.success(t["result_success"])
                         
                         # Lưu lịch sử
@@ -464,7 +462,7 @@ with tab1:
         result = st.session_state.last_result
         st.divider()
         
-        col_dl1, col_dl2, col_dl3 = st.columns(3)
+        col_dl1, col_dl2 = st.columns(2)
         with col_dl1:
             st.download_button(
                 label=t["btn_dl_md"],
@@ -475,21 +473,9 @@ with tab1:
             )
         with col_dl2:
             try:
-                pdf_bytes = markdown_to_pdf_bytes(result['full_report'], title=t["report_title_short"])
-                st.download_button(
-                    label=t["btn_dl_pdf"],
-                    data=pdf_bytes,
-                    file_name=f'bao_cao_cdpb_{datetime.now().strftime("%Y%m%d_%H%M")}.pdf',
-                    mime='application/pdf',
-                    use_container_width=True
-                )
-            except Exception as e:
-                st.error(f"{t['pdf_error']}: {e}")
-        with col_dl3:
-            try:
                 docx_bytes = markdown_to_docx_bytes(result['full_report'], title=t["report_title_short"])
                 st.download_button(
-                    label=t["btn_dl_docx"],
+                    label=t.get("btn_dl_docx", "📥 Tải Báo Cáo (DOCX)"),
                     data=docx_bytes,
                     file_name=f'bao_cao_cdpb_{datetime.now().strftime("%Y%m%d_%H%M")}.docx',
                     mime='application/vnd.openxmlformats-officedocument.wordprocessingml.document',

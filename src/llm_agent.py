@@ -146,7 +146,8 @@ hãy lập danh sách chẩn đoán phân biệt có xếp hạng.
 
 Lưu ý quan trọng:
 - Xếp hạng từ khả năng CAO đến THẤP
-- Luôn trích dẫn nguồn phác đồ cụ thể
+- **KHÔNG BAE GIỜ** in ra tên file raw (VD: `tieuduong_type2_byt_2020.pdf`). Thay vì vậy, luôn BẮT BUỘC phiên dịch tên file thành tên tài liệu dễ đọc, chuyên nghiệp (VD: "Hướng dẫn chẩn đoán và điều trị Hô hấp, Bộ Y Tế", "Phác đồ đái tháo đường típ 2, Bộ Y tế 2020").
+- Luôn trích dẫn nguồn phác đồ cụ thể theo định dạng mượt mà (VD: "Theo Phác đồ ĐTĐ Bộ Y Tế 2020, mục 5.a...")
 - Chỉ sử dụng thông tin từ phác đồ y tế được cung cấp, KHÔNG tự bịa thêm
 - Nếu không đủ thông tin để chẩn đoán, hãy nói rõ
 - QUAN TRỌNG: Luôn bám sát nội dung phác đồ được cung cấp. Khi trích dẫn tiêu chuẩn chẩn đoán, phải ghi rõ TỪNG điều kiện kèm theo (ví dụ: điều kiện về triệu chứng, yêu cầu xét nghiệm lặp lại, ngoại lệ, chống chỉ định...) theo đúng nguyên văn tài liệu. Nếu ca bệnh đáp ứng đủ điều kiện thì kết luận, nếu thiếu thì nêu rõ điều kiện nào còn thiếu."""

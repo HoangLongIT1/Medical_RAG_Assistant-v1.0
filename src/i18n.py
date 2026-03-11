@@ -50,7 +50,6 @@ LANG = {
 
         # ── Tab 1: Report download ──
         "btn_dl_md": "📥 Tải Báo Cáo (Markdown)",
-        "btn_dl_pdf": "📥 Tải Báo Cáo (PDF)",
         "btn_dl_docx": "📥 Tải Báo Cáo (DOCX)",
         "report_title": "Báo Cáo Chẩn Đoán Phân Biệt",
         "report_title_short": "Báo Cáo CĐPB",
@@ -59,7 +58,6 @@ LANG = {
         "report_ddx": "Chẩn Đoán Phân Biệt",
         "report_summary": "Tóm Tắt & Khuyến Nghị",
         "disclaimer": "Kết quả chỉ mang tính tham khảo. Cần bác sĩ chuyên khoa xem xét trước khi áp dụng.",
-        "pdf_error": "Lỗi tạo PDF",
 
         # ── Tab 2: Document Q&A ──
         "doc_upload_title": "📄 Tải lên Tài liệu Phác đồ Cá nhân hóa",
@@ -149,7 +147,6 @@ LANG = {
 
         # ── Tab 1: Report download ──
         "btn_dl_md": "📥 Download Report (Markdown)",
-        "btn_dl_pdf": "📥 Download Report (PDF)",
         "btn_dl_docx": "📥 Download Report (DOCX)",
         "report_title": "Differential Diagnosis Report",
         "report_title_short": "DDx Report",
@@ -158,7 +155,6 @@ LANG = {
         "report_ddx": "Differential Diagnosis",
         "report_summary": "Summary & Recommendations",
         "disclaimer": "This tool is for reference only and does not replace the clinical judgment of a physician.",
-        "pdf_error": "PDF generation error",
 
         # ── Tab 2: Document Q&A ──
         "doc_upload_title": "📄 Upload Personalized Protocol Documents",
