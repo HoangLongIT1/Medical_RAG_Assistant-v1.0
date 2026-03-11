@@ -1,0 +1,30 @@
+# Environment
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Data (raw protocols are not tracked)
+data/raw/
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+temp_upload.*
+test_output.pdf
+test_vn.pdf
+bao_cao_*.md
+bao_cao_*.pdf
+
+# Logs
+*.log
+nohup.out
