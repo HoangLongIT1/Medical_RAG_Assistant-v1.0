@@ -88,7 +88,8 @@ def run_diagnosis_chain(
             {
                 'content': doc.page_content[:200] + "...",
                 'source': doc.metadata.get('source', 'N/A'),
-                'specialty': doc.metadata.get('specialty', 'N/A')
+                'specialty': doc.metadata.get('specialty', 'N/A'),
+                'score': doc.metadata.get('score', 'N/A')
             }
             for doc in documents
         ]
@@ -183,11 +184,15 @@ def run_diagnosis_chain_stream(
         documents = retrieve_context(query=search_query, specialty=specialty, k=5)
         context_text = format_context(documents)
         
-        sources_info = [
-            f"- {doc.metadata.get('source', 'N/A')} ({doc.metadata.get('specialty', '')})"
-            for doc in documents
-        ]
-        yield {"step": "step2_done", "content": "\n".join(sources_info) if sources_info else "Không tìm thấy tài liệu liên quan."}
+        sources_info = []
+        for doc in documents:
+            source_name = doc.metadata.get('source', 'N/A')
+            spec = doc.metadata.get('specialty', '')
+            
+            sources_info.append(f"- **{source_name}** ({spec})")
+            
+        sources_text = "\n".join(sources_info) if sources_info else "Không tìm thấy tài liệu liên quan."
+        yield {"step": "step2_done", "content": sources_text}
         
         # Bước 3: DDx (Không dùng stream để tránh gãy kết nối API)
         yield {"step": "step3_start", "content": "🧠 **Bước 3:** Đang lập luận chẩn đoán phân biệt..."}

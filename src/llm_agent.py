@@ -170,31 +170,39 @@ Ngắn gọn, thực tiễn lâm sàng."""
 
 
 DOCUMENT_QA_PROMPT = """Bạn là một chuyên gia phân tích tài liệu y khoa.
-Nhiệm vụ của bạn là trả lời các câu hỏi dựa trên nội dung của văn bản phác đồ điều trị được cung cấp dưới đây.
+Nhiệm vụ của bạn là trả lời các câu hỏi dựa trên 2 nguồn tài liệu:
+1. Tài liệu do người dùng tải lên (Nguồn A).
+2. Phác đồ y tế tham khảo từ Hệ thống (Nguồn B).
 {language_instruction}
 
-**Nội dung tài liệu được trích xuất:**
---- BẮT ĐẦU TÀI LIỆU ---
+**Nguồn A (Tài liệu tải lên):**
+--- BẮT ĐẦU NGUỒN A ---
 {document_context}
---- KẾT THÚC TÀI LIỆU ---
+--- KẾT THÚC NGUỒN A ---
+
+**Nguồn B (Phác đồ tham khảo Hệ thống):**
+--- BẮT ĐẦU NGUỒN B ---
+{global_context}
+--- KẾT THÚC NGUỒN B ---
 
 **Câu hỏi của người dùng:**
 {question}
 
 **Yêu cầu:**
-1. Trả lời chi tiết, chính xác và 100% dựa trên nội dung tài liệu được cung cấp.
-2. Nhanh chóng đưa ra kết luận (nếu có) trước khi giải thích chi tiết.
-3. Nếu tài liệu không chứa thông tin để trả lời câu hỏi, hãy nói rõ: "Xin lỗi, văn bản này không đề cập đến thông tin bạn cần." KHÔNG tự suy đoán bên ngoài.
-4. Trả lời chuyên nghiệp, sử dụng markdown để làm nổi bật (in đậm, in nghiêng) các điểm cốt lõi.
+1. Ưu tiên trả lời dựa trên Nguồn A.
+2. Nếu Nguồn B có thông tin liên quan, hãy ĐỐI CHIẾU và phân tích thêm (ghi rõ là theo phác đồ hệ thống). Nếu Nguồn B khác Nguồn A, hãy nêu rõ sự khác biệt đó.
+3. Nếu cả 2 nguồn đều không có thông tin, hãy nói: "Xin lỗi, tài liệu không đề cập đến thông tin bạn cần." KHÔNG TỰ BỊA ĐẶT.
+4. Trả lời chuyên nghiệp, dùng định dạng rõ ràng (đạn dòng, bôi đậm).
 """
 
 
-def answer_document_question_stream(context: str, question: str, language_instruction: str = "", temperature: float = 0.2):
+def answer_document_question_stream(local_context: str, global_context: str, question: str, language_instruction: str = "", temperature: float = 0.2):
     """
-    Tạo phản hồi dạng stream cho Document Q&A feature.
+    Tạo phản hồi dạng stream cho Document Q&A feature (Double RAG).
     """
     full_prompt = DOCUMENT_QA_PROMPT.format(
-        document_context=context, 
+        document_context=local_context, 
+        global_context=global_context,
         question=question,
         language_instruction=language_instruction
     )

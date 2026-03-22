@@ -13,7 +13,7 @@ LANG = {
         "tab_dash": "📊 Dashboard Thống Kê",
 
         # ── Tab 1: Form nhập liệu ──
-        "demo_cases": "📋 Chọn nhanh ca bệnh mẫu (Dành cho Demo):",
+        "demo_cases": "📋 Chọn nhanh ca bệnh mẫu:",
         "clinical_info": "📝 Thông tin lâm sàng",
         "symptoms_label": "Bệnh sử & Triệu chứng:",
         "symptoms_placeholder": "Ví dụ: Bệnh nhân nam, 58 tuổi, vào viện vì đau ngực trái...",
@@ -95,7 +95,7 @@ LANG = {
         "step_drug_check": "⏳ Đang kiểm tra tương tác thuốc...",
 
         # ── Footer ──
-        "footer_text": "Công cụ hỗ trợ lâm sàng — Dựa trên phác đồ Bộ Y tế Việt Nam 2022-2024. Không thay thế phán đoán y khoa.",
+        "footer_text": "Công cụ hỗ trợ lâm sàng — Dựa trên phác đồ Bộ Y tế Việt Nam. Không thay thế phán đoán y khoa.",
 
         # ── Prompt instruction ──
         "prompt_instruction": "Bạn PHẢI trả lời bằng TIẾNG VIỆT, sử dụng văn phong y khoa chuyên nghiệp và chuẩn mực của Việt Nam."
@@ -110,7 +110,7 @@ LANG = {
         "tab_dash": "📊 Statistical Dashboard",
 
         # ── Tab 1: Form ──
-        "demo_cases": "📋 Quick load sample cases (For Demo):",
+        "demo_cases": "📋 Quick load sample cases:",
         "clinical_info": "📝 Clinical Information",
         "symptoms_label": "Medical History & Symptoms:",
         "symptoms_placeholder": "E.g., 58-year-old male presenting with left chest pain...",
@@ -192,7 +192,7 @@ LANG = {
         "step_drug_check": "⏳ Checking drug interactions...",
 
         # ── Footer ──
-        "footer_text": "Clinical support tool — Based on Vietnam MOH Protocols 2022-2024. Does not replace medical judgment.",
+        "footer_text": "Clinical support tool — Based on Vietnam MOH Protocols. Does not replace medical judgment.",
 
         # ── Prompt instruction ──
         "prompt_instruction": "You MUST respond in ENGLISH, using professional and standard medical terminology."

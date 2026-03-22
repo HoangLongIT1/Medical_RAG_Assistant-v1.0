@@ -114,11 +114,23 @@ def hybrid_retrieve(
     if specialty_filter:
         search_kwargs["filter"] = {"specialty": specialty_filter}
     
-    vector_retriever = vectorstore.as_retriever(
-        search_type="similarity",
-        search_kwargs=search_kwargs
-    )
-    vector_results = vector_retriever.invoke(query)
+    vector_results = []
+    try:
+        # Lấy distance score từ vectorstore
+        score_results = vectorstore.similarity_search_with_score(query, **search_kwargs)
+        for doc, distance in score_results:
+            # Chroma mặc định trả về L2 squared distance. 
+            # Giả định embedding chuẩn hóa, max = 2.0. Chuyển đổi thành %: similarity = 1 - (distance/2)
+            sim_pct = round(max(0.0, 1.0 - (distance / 2.0)) * 100, 1)
+            doc.metadata["score"] = sim_pct
+            vector_results.append(doc)
+    except Exception as e:
+        print(f"⚠️ Vector search lỗi, chuyển sang fallback: {e}")
+        vector_retriever = vectorstore.as_retriever(
+            search_type="similarity",
+            search_kwargs=search_kwargs
+        )
+        vector_results = vector_retriever.invoke(query)
     
     # 2. BM25 Keyword Search (Sử dụng Cache)
     bm25_results = []
@@ -176,8 +188,11 @@ def format_context(documents: list[Document]) -> str:
     for i, doc in enumerate(documents, 1):
         source = doc.metadata.get('source', 'Không rõ')
         specialty = doc.metadata.get('specialty', 'Chung')
+        score = doc.metadata.get('score', 'N/A')
+        
+        score_info = f" | Tin cậy: {score}%" if isinstance(score, float) else f" | Nguồn: {score}" if score != 'N/A' else ""
         context_parts.append(
-            f"[Nguồn {i}: {source} | Chuyên khoa: {specialty}]\n{doc.page_content}"
+            f"[Nguồn {i}: {source} | Chuyên khoa: {specialty}{score_info}]\n{doc.page_content}"
         )
     
     return "\n\n---\n\n".join(context_parts)

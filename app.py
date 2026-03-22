@@ -24,6 +24,10 @@ from src.i18n import LANG
 from src.docx_exporter import markdown_to_docx_bytes
 from src.sample_cases import SAMPLE_CASE_BANK, CATEGORY_ORDER_ROW1, CATEGORY_ORDER_ROW2, get_random_case
 
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
+from src.rag_engine import _create_embeddings, retrieve_context, format_context
+
 
 # ── Cấu hình trang ────────────────────────────────────────
 st.set_page_config(
@@ -165,8 +169,37 @@ st.markdown("""
         font-size: 0.95rem;
         margin-bottom: 0.5rem;
     }
+    
+    /* Scroll to top button */
+    #scrollToTop {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #0284c7;
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 24px;
+        line-height: 50px;
+        cursor: pointer;
+        z-index: 9999;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        text-decoration: none;
+        transition: 0.3s;
+    }
+    #scrollToTop:hover {
+        background: #0369a1;
+        transform: scale(1.1);
+        color: white;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# Nút quay về đầu trang (Click to Top)
+st.markdown('<div id="top"></div>', unsafe_allow_html=True)
+st.markdown('<a href="#top" id="scrollToTop" title="Lên đầu trang">⬆</a>', unsafe_allow_html=True)
 
 # Lấy từ điển ngôn ngữ hiện tại
 t = LANG[st.session_state.get("lang", "vi")]
@@ -327,10 +360,12 @@ with tab1:
             with st.spinner(t.get('step_analysis', "Đang chuẩn bị...")):
                 # Containers cho mỗi bước
                 progress_bar = st.progress(5, text="Khởi động quá trình phân tích...")
+                step2_container = st.container()
                 step3_container = st.container()
                 step4_container = st.container()
                 
                 # Chạy chain streaming
+                sources_text_buffer = ""
                 ddx_text_buffer = ""
                 summary_text_buffer = ""
                 drug_warning_buffer = ""
@@ -358,7 +393,10 @@ with tab1:
                         progress_bar.progress(35, text=t.get('step_search', "Đang tra cứu phác đồ..."))
                     
                     elif step == "step2_done":
-                        pass
+                        sources_text_buffer = content
+                        with step2_container:
+                            st.markdown(f"### 📑 Nguồn chứng cứ")
+                            st.info(content)
                     
                     elif step == "step3_start":
                         progress_bar.progress(55, text=t.get('step_ddx', "Đang lập luận chẩn đoán phân biệt..."))
@@ -425,8 +463,14 @@ with tab1:
 ## 🏥 {t['report_case_info']}
 {enriched_input}
 
+## 📑 Nguồn chứng cứ
+{sources_text_buffer}
+
 ## 🧠 {t['report_ddx']}
 {ddx_text_buffer}
+
+## 💊 Cảnh báo Thuốc
+{drug_warning_buffer}
 
 ## 📝 {t['report_summary']}
 {summary_text_buffer}
@@ -435,6 +479,7 @@ with tab1:
 ⚕️ *{t['disclaimer']}*
 """
                     st.session_state.last_result = {
+                        'sources_text': sources_text_buffer,
                         'ddx_text': ddx_text_buffer,
                         'summary_text': summary_text_buffer,
                         'drug_warning': drug_warning_buffer,
@@ -452,7 +497,16 @@ with tab1:
             st.divider()
             st.markdown(f"## 📊 {t['analysis_results']}")
             
-            # Khôi phục cảnh báo thuốc nếu có
+            if result.get('sources_text'):
+                with st.container():
+                    st.markdown(f"### 📑 Nguồn chứng cứ")
+                    st.info(result['sources_text'])
+            
+            with st.container():
+                st.markdown(f"### 🧠 {t['ddx_title']}")
+                st.markdown(result['ddx_text'])
+                
+            # Khôi phục cảnh báo thuốc (đặt dưới DDX)
             if result.get('drug_warning'):
                 warning_content = result['drug_warning']
                 if "[Không phát hiện" not in warning_content and "No serious drug interactions" not in warning_content:
@@ -460,9 +514,6 @@ with tab1:
                 else:
                     st.info(f"💡 {t['no_drug_warning']}")
             
-            with st.container():
-                st.markdown(f"### 🧠 {t['ddx_title']}")
-                st.markdown(result['ddx_text'])
             with st.container():
                 st.markdown(f"### 📝 {t['summary_title']}")
                 st.markdown(result['summary_text'])
@@ -545,10 +596,31 @@ with tab2:
                     if os.path.exists(temp_path):
                         os.remove(temp_path)
                     
+                    
                     all_texts.append(f"\n\n--- [{uploaded_file.name}] ---\n\n{text_content}")
                     file_info_list.append(f"• **{uploaded_file.name}** ({len(text_content):,} {t['characters']})")
                 
-                st.session_state.doc_content = "\n".join(all_texts)
+                # Nối chữ và lưu session
+                full_raw_text = "\n".join(all_texts)
+                st.session_state.doc_content = full_raw_text
+                
+                # Double RAG: Tạo In-memory Vector Store tạm thời cho file tải lên
+                t_start = time.time()
+                try:
+                    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=200)
+                    chunks = text_splitter.split_text(full_raw_text)
+                    
+                    embeddings = _create_embeddings()
+                    temp_vectorstore = Chroma.from_texts(
+                        texts=chunks,
+                        embedding=embeddings,
+                        collection_name=f"temp_doc_{int(t_start)}"
+                    )
+                    st.session_state.temp_retriever = temp_vectorstore.as_retriever(search_kwargs={"k": 4})
+                except Exception as e:
+                    print(f"Lỗi tạo hệ thống Local RAG tạm thời: {e}")
+                    st.session_state.temp_retriever = None
+
                 st.session_state.doc_names = current_file_names
                 st.session_state.qa_history = []  # Reset lịch sử chat
         
@@ -566,42 +638,61 @@ with tab2:
         st.divider()
         st.markdown(f"### 💬 {t['doc_chat_title']}")
         
-        # Hiển thị lịch sử chat
-        for message in st.session_state.qa_history:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+        # Phần giao diện Chat
+        st.divider()
+        st.markdown(f"### 💬 {t['doc_chat_title']}")
+        
+        chat_container = st.container()
                 
-        # Khung nhập chat mới
+        # Khung nhập chat mới ở bên dưới container lịch sử
         if user_question := st.chat_input(t["doc_chat_placeholder"]):
             if not os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY") == "your_api_key_here":
                 st.error(t["error_api_key"])
             else:
-                # Add user message to UI
-                st.chat_message("user").markdown(user_question)
-                # Lưu vào lịch sử
+                # Lưu vào lịch sử, và thêm ô chờ kết quả
                 st.session_state.qa_history.append({"role": "user", "content": user_question})
+                st.session_state.qa_history.append({"role": "assistant", "content": ""})
                 
-                # Gọi AI trả lời
-                with st.chat_message("assistant"):
-                    response_placeholder = st.empty()
-                    full_response = ""
-                    
-                    try:
-                        # Rút gọn context nếu quá dài (tránh vỡ token limit)
-                        context_to_send = st.session_state.doc_content[:150000] 
-                        
-                        for chunk in answer_document_question_stream(context_to_send, user_question, language_instruction=t["prompt_instruction"]):
-                            full_response += chunk
-                            response_placeholder.markdown(full_response + "▌")
-                            
-                        response_placeholder.markdown(full_response)
-                        # Lưu lịch sử
-                        st.session_state.qa_history.append({"role": "assistant", "content": full_response})
-                    except Exception as e:
-                        print(f"Lỗi Q&A: {e}")
-                        error_msg = f"❌ {t['error_occurred']}: Hệ thống đang bận hoặc mất kết nối. Vui lòng thử lại sau."
-                        response_placeholder.error(error_msg)
-                        st.session_state.qa_history.append({"role": "assistant", "content": error_msg})
+                with chat_container:
+                    for i, message in enumerate(st.session_state.qa_history):
+                        with st.chat_message(message["role"]):
+                            if i == len(st.session_state.qa_history) - 1:
+                                response_placeholder = st.empty()
+                                full_response = ""
+                                try:
+                                    # 1. Truy xuất kho Local (File tải lên)
+                                    if st.session_state.get('temp_retriever'):
+                                        local_docs = st.session_state.temp_retriever.invoke(user_question)
+                                        local_context = "\n\n---\n\n".join([doc.page_content for doc in local_docs])
+                                    else:
+                                        # Fallback to pure text if temp vector store failed
+                                        local_context = st.session_state.doc_content[:15000]
+                                        
+                                    # 2. Truy xuất kho Global (Phác đồ chuẩn hệ thống)
+                                    global_docs = retrieve_context(user_question, k=3)
+                                    global_context = format_context(global_docs) if global_docs else "Không có thông tin từ phác đồ hệ thống."
+                                    
+                                    # 3. Stream phản hồi qua Dual-RAG
+                                    for chunk in answer_document_question_stream(local_context, global_context, user_question, language_instruction=t["prompt_instruction"]):
+                                        full_response += chunk
+                                        response_placeholder.markdown(full_response + "▌")
+                                        
+                                    response_placeholder.markdown(full_response)
+                                    st.session_state.qa_history[i]["content"] = full_response
+                                except Exception as e:
+                                    print(f"Lỗi Q&A: {e}")
+                                    error_msg = f"❌ {t['error_occurred']}: Hệ thống đang bận hoặc mất kết nối. Vui lòng thử lại sau."
+                                    response_placeholder.error(error_msg)
+                                    st.session_state.qa_history[i]["content"] = error_msg
+                            else:
+                                st.markdown(message["content"])
+        else:
+            # Chỉ hiển thị lịch sử nếu không có câu hỏi mới đang được gửi
+            with chat_container:
+                for message in st.session_state.qa_history:
+                    if message["content"]:
+                        with st.chat_message(message["role"]):
+                            st.markdown(message["content"])
 
 # ── Footer disclaimer ─────────────────────────────────────
 st.divider()
