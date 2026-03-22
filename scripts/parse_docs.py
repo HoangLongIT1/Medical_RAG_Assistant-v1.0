@@ -11,11 +11,22 @@ import docx2txt
 
 
 def extract_text_from_pdf(pdf_path: str) -> str:
-    """Trích xuất text từ file PDF bằng PyMuPDF (hỗ trợ tốt tiếng Việt)."""
+    """Trích xuất text từ file PDF bằng PyMuPDF với xử lý ghép dòng thông minh."""
     doc = fitz.open(pdf_path)
     text_parts = []
     for page_num, page in enumerate(doc, 1):
-        page_text = page.get_text("text")
+        # Sử dụng 'dict' để lấy khối văn bản, giúp giữ thứ tự đọc tốt hơn
+        blocks = page.get_text("blocks")
+        page_text = ""
+        for b in blocks:
+            # b[4] chứa nội dung text của khối
+            block_content = b[4].strip()
+            if block_content:
+                # Thay thế các dấu xuống dòng đơn lẻ trong khối bằng khoảng trắng 
+                # để tránh việc bị ngắt dòng vô lý giữa từ
+                block_content = block_content.replace("\n", " ")
+                page_text += block_content + "\n"
+        
         if page_text.strip():
             text_parts.append(f"\n--- Trang {page_num} ---\n{page_text}")
     doc.close()
@@ -28,14 +39,60 @@ def extract_text_from_docx(docx_path: str) -> str:
 
 
 def clean_text(text: str) -> str:
-    """Làm sạch văn bản y tế tiếng Việt."""
-    # Xóa ký tự đặc biệt thừa nhưng giữ dấu tiếng Việt
-    text = re.sub(r'\n{3,}', '\n\n', text)
+    """Làm sạch văn bản y tế tiếng Việt, xử lý các lỗi font, xuống dòng sai, và lọc rác (Mục lục, Tài liệu tham khảo)."""
+    
+    # 0. Truncate at "Tài liệu tham khảo" (thường ở phần cuối)
+    # Loại bỏ phụ lục / tài liệu tham khảo nếu nó nằm ở nửa cuối văn bản
+    ref_match = re.search(r'\n\s*TÀI LIỆU THAM KHẢO\s*\n', text, re.IGNORECASE)
+    if ref_match and ref_match.start() > len(text) * 0.5:
+        text = text[:ref_match.start()]
+    
+    # 1. Xử lý dấu gạch nối ngắt từ (Ví dụ: "chẩn- \n đoán" -> "chẩn đoán")
+    text = re.sub(r'(\w)-\s*\n\s*(\w)', r'\1\2', text)
+    
+    # 2. Loại bỏ các dòng Mục lục (chứa nhiều dấu chấm liên tiếp e.g "..........")
+    text = re.sub(r'^.*\.{5,}.*$', '', text, flags=re.MULTILINE)
+    
+    # 3. Lọc bỏ các dòng chỉ chứa số (thường là số trang bị tách rời)
+    text = re.sub(r'^\s*\d+\s*$', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^Trang\s+\d+(\/\d+)?$', '', text, flags=re.MULTILINE | re.IGNORECASE)
+    
+    # 4. Xử lý lỗi font, giữ lại ký tự in được và newline
+    text = "".join(ch for ch in text if ch.isprintable() or ch == '\n')
+
+    # 5. Phục hồi các câu bị rớt dòng (nếu dòng kết thúc bằng chữ thường hoặc dấu phẩy thì nối nó với dòng tiếp theo)
+    # Tạm thay \n thành khoảng trắng nếu câu chưa kết thúc bằng dấu câu chính (., :, ?, !)
+    lines = text.split('\n')
+    cleaned_lines = []
+    current_sentence = ""
+    for line in lines:
+        line_stripped = line.strip()
+        if not line_stripped:
+            if current_sentence:
+                cleaned_lines.append(current_sentence)
+                current_sentence = ""
+            continue
+            
+        if current_sentence:
+            # Nếu câu đang chờ kết nối
+            if current_sentence[-1] in ['.', ':', '?', '!', ';']:
+                cleaned_lines.append(current_sentence)
+                current_sentence = line_stripped
+            else:
+                current_sentence += " " + line_stripped
+        else:
+            current_sentence = line_stripped
+            
+    if current_sentence:
+        cleaned_lines.append(current_sentence)
+        
+    text = "\n\n".join(cleaned_lines)
+
+    # 6. Chuẩn hóa khoảng trắng
     text = re.sub(r'[ \t]{2,}', ' ', text)
-    text = re.sub(r'[^\S\n]+', ' ', text)
-    # Giữ lại các ký tự y tế quan trọng
-    text = text.strip()
-    return text
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    
+    return text.strip()
 
 
 def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> list[dict]:
@@ -67,7 +124,8 @@ def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> list[di
                 end = cut_point + 1
         
         chunk_content = text[start:end].strip()
-        if chunk_content:
+        # Loại bỏ các đoạn văn quá ngắn (dưới 50 ký tự) vì không mang lại giá trị lâm sàng và làm nhiễu vector db
+        if chunk_content and len(chunk_content) >= 50:
             chunks.append({
                 'content': chunk_content,
                 'chunk_index': chunk_index
