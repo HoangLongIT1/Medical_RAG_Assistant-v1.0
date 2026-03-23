@@ -315,7 +315,7 @@ with tab1:
         
         case_input = st.text_area(
             t["symptoms_label"],
-            height=130,
+            height=300,
             placeholder=t["symptoms_placeholder"],
             key="case_input"
         )

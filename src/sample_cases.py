@@ -6,13 +6,7 @@ Gồm 35 ca bệnh (5 ca/nhóm) được định dạng chuẩn Bệnh án Nội
 import random
 
 def format_case(case_data: dict) -> str:
-    template = f"""Dưới đây là một **ca bệnh giả lập theo phong cách ghi nhận thực tế của bác sĩ lâm sàng**:
-
----
-
-### 📝 **BỆNH ÁN NỘI KHOA – {case_data['specialty'].upper()}**
-
-**Họ tên:** {case_data.get('name', 'Nguyễn Văn A')}
+    template = f"""**Họ tên:** {case_data.get('name', 'Nguyễn Văn A')}
 **Giới tính:** {case_data['sex']}
 **Tuổi:** {case_data['age']}
 **Nghề nghiệp:** {case_data.get('job', 'Tự do')}
