@@ -213,7 +213,6 @@ with st.sidebar:
     - **RAG:** LangChain + ChromaDB
     - **Tìm kiếm:** Hybrid (Vector + BM25)
     - **An toàn:** SafetyGuardrail 
-    - **Tri thức:** 3 phác đồ (424 chunks)
     """)
     
     st.divider()
