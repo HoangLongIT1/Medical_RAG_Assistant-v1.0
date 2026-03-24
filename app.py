@@ -574,53 +574,61 @@ with tab1:
             st.markdown(f"### {t['chat_followup_title']}")
             st.info(t["chat_followup_info"])
 
+            # Container để chứa phần chat để input luôn nằm dưới cuối
+            chat_container = st.container()
+
             # Hiển thị lịch sử chat (trừ đoạn báo cáo đầu tiên vì đã hiện phía trên rồi)
-            for i, msg in enumerate(st.session_state.chat_history_tab1):
-                if i == 0: continue # Bỏ qua report đầu tiên để tránh trùng lặp nội dung Card phía trên
-                with st.chat_message(msg["role"]):
-                    st.markdown(msg["content"])
+            with chat_container:
+                for i, msg in enumerate(st.session_state.chat_history_tab1):
+                    if i == 0: continue # Bỏ qua report đầu tiên để tránh trùng lặp nội dung Card phía trên
+                    with st.chat_message(msg["role"]):
+                        st.markdown(msg["content"])
 
             # Chat input cho câu hỏi tiếp theo
             follow_up_q = st.chat_input(t["chat_followup_placeholder"], key="follow_up_q")
 
             if follow_up_q:
-                # Hiện câu hỏi người dùng
-                with st.chat_message("user"):
-                    st.markdown(follow_up_q)
                 st.session_state.chat_history_tab1.append({"role": "user", "content": follow_up_q})
+                
+                # Hiện câu hỏi và câu trả lời trực tiếp trong container
+                with chat_container:
+                    with st.chat_message("user"):
+                        st.markdown(follow_up_q)
 
-                # Tạo phản hồi AI từ context đã có
-                with st.chat_message("assistant"):
-                    # Gom lịch sử thành text
-                    hist_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.chat_history_tab1[:-1]])
-                    response_placeholder = st.empty()
-                    full_response = ""
-                    
-                    try:
-                        for chunk in answer_followup_stream(
-                            context=st.session_state.current_rag_context,
-                            chat_history=hist_text,
-                            question=follow_up_q,
-                            language_instruction=t["prompt_instruction"]
-                        ):
-                            full_response += chunk
-                            response_placeholder.markdown(full_response + "▌")
+                    # Tạo phản hồi AI từ context đã có
+                    with st.chat_message("assistant"):
+                        # Gom lịch sử thành text
+                        hist_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.chat_history_tab1[:-1]])
+                        response_placeholder = st.empty()
+                        full_response = ""
                         
-                        response_placeholder.markdown(full_response)
-                        st.session_state.chat_history_tab1.append({"role": "assistant", "content": full_response})
-                    except Exception as e:
-                        error_msg = str(e).lower()
-                        if "429" in error_msg or "quota" in error_msg or "resourceexhausted" in error_msg:
-                            st.error(t["error_quota"])
-                        elif "400" in error_msg or "invalidargument" in error_msg or "context" in error_msg or "too long" in error_msg:
-                            st.error(t["error_context"])
-                        elif "401" in error_msg or "403" in error_msg or "unauthenticated" in error_msg:
-                            st.error(t["error_auth"])
-                        elif "timeout" in error_msg or "deadlineexceeded" in error_msg:
-                            st.error(t["error_timeout"])
-                        else:
-                            st.error(t["error_unknown"].format(e=e))
-
+                        try:
+                            for chunk in answer_followup_stream(
+                                context=st.session_state.current_rag_context,
+                                chat_history=hist_text,
+                                question=follow_up_q,
+                                language_instruction=t["prompt_instruction"]
+                            ):
+                                full_response += chunk
+                                response_placeholder.markdown(full_response + "▌")
+                            
+                            response_placeholder.markdown(full_response)
+                            st.session_state.chat_history_tab1.append({"role": "assistant", "content": full_response})
+                        except Exception as e:
+                            error_msg = str(e).lower()
+                            if "429" in error_msg or "quota" in error_msg or "resourceexhausted" in error_msg:
+                                st.error(t["error_quota"])
+                            elif "400" in error_msg or "invalidargument" in error_msg or "context" in error_msg or "too long" in error_msg:
+                                st.error(t["error_context"])
+                            elif "401" in error_msg or "403" in error_msg or "unauthenticated" in error_msg:
+                                st.error(t["error_auth"])
+                            elif "timeout" in error_msg or "deadlineexceeded" in error_msg:
+                                st.error(t["error_timeout"])
+                            else:
+                                st.error(t["error_unknown"].format(e=e))
+                
+                # Cập nhật lại UI để hiện lại thanh nhập chat
+                st.rerun()
 # ==========================================
 # TAB 2: Phân tích Tài liệu (Upload & Q&A) – Hỗ trợ nhiều file
 # ==========================================
