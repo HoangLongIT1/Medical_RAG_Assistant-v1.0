@@ -53,6 +53,15 @@ LANG = {
         "summary_title": "Tóm Tắt & Khuyến Nghị",
         "result_success": "✅ Hoàn thành phân tích!",
 
+        # ── Tab 1: Report download ──
+        "btn_dl_md": "📥 Tải Báo Cáo (Markdown)",
+        "btn_dl_docx": "📥 Tải Báo Cáo (DOCX)",
+        "report_title": "Báo Cáo Chẩn Đoán Phân Biệt",
+        "report_title_short": "Báo Cáo CĐPB",
+        "report_specialty": "Chuyên khoa",
+        "report_case_info": "Ca Bệnh",
+        "report_ddx": "Chẩn Đoán Phân Biệt",
+        "report_summary": "Tóm Tắt & Khuyến Nghị",
         "disclaimer": "Kết quả chỉ mang tính tham khảo. Cần bác sĩ chuyên khoa xem xét trước khi áp dụng.",
 
         # ── Follow-up Chat ──
