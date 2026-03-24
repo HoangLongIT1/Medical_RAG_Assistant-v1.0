@@ -230,6 +230,15 @@ def run_diagnosis_chain_stream(
         yield {"step": "complete", "content": "✅ Hoàn thành!"}
 
     except Exception as e:
-        # Bắt toàn bộ lỗi (như lỗi API rate limit, quota exceeded...)
-        print(f"❌ Lỗi hệ thống: {str(e)}")
-        yield {"step": "error", "content": "Rất tiếc! Đã có sự cố kết nối hoặc máy chủ đang bị quá tải. Vui lòng thử lại sau ít phút."}
+        # Bắt các lỗi phổ biến từ Gemini/API và phân loại thành mã lỗi (error_key)
+        error_msg = str(e).lower()
+        if "429" in error_msg or "quota" in error_msg or "resourceexhausted" in error_msg:
+            yield {"step": "error", "error_key": "error_quota"}
+        elif "400" in error_msg or "invalidargument" in error_msg or "context" in error_msg or "too long" in error_msg:
+            yield {"step": "error", "error_key": "error_context"}
+        elif "401" in error_msg or "403" in error_msg or "unauthenticated" in error_msg:
+            yield {"step": "error", "error_key": "error_auth"}
+        elif "timeout" in error_msg or "deadlineexceeded" in error_msg:
+            yield {"step": "error", "error_key": "error_timeout"}
+        else:
+            yield {"step": "error", "error_key": "error_unknown", "error_details": str(e)}

@@ -35,6 +35,11 @@ LANG = {
         "error_empty_input": "⚠️ Vui lòng nhập mô tả triệu chứng!",
         "error_api_key": "⚠️ Lỗi hệ thống: Chưa cấu hình API Key trong file .env!",
         "error_occurred": "Đã xảy ra lỗi",
+        "error_quota": "⚠️ Hệ thống đang quá tải hoặc hết hạn mức từ Google (Quota). Vui lòng thử lại sau vài phút.",
+        "error_context": "⚠️ Dữ liệu đầu vào quá dài, vượt quá giới hạn xử lý của AI. Vui lòng thử lại với nội dung ngắn hơn.",
+        "error_auth": "⚠️ Lỗi xác thực. API Key không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại file .env.",
+        "error_timeout": "⚠️ Kết nối mạng không ổn định hoặc phản hồi quá lâu. Vui lòng thử lại.",
+        "error_unknown": "⚠️ Đã xảy ra lỗi không xác định từ AI: {e}. Vui lòng thử lại.",
         "analysis_results": "Kết Quả Phân Tích",
 
         # ── Tab 1: Processing steps ──
@@ -128,6 +133,11 @@ LANG = {
         "error_empty_input": "⚠️ Please enter symptom descriptions!",
         "error_api_key": "⚠️ System Error: No API Key configured in .env file!",
         "error_occurred": "An error occurred",
+        "error_quota": "⚠️ The system is overloaded or has exceeded its Google API quota. Please try again in a few minutes.",
+        "error_context": "⚠️ The input data is too long and exceeds the AI's processing limit. Please try with shorter content.",
+        "error_auth": "⚠️ Authentication error. Invalid or expired API Key. Please check your .env file.",
+        "error_timeout": "⚠️ Unstable network connection or response timed out. Please try again.",
+        "error_unknown": "⚠️ An unknown AI error occurred: {e}. Please try again.",
         "analysis_results": "Analysis Results",
 
         # ── Tab 1: Processing steps ──

@@ -460,7 +460,13 @@ with tab1:
                     elif step == "error":
                         progress_bar.empty()
                         st.session_state.analysis_done = False
-                        st.error(f"⚠️ {content}")
+                        if "error_key" in event:
+                            if event["error_key"] == "error_unknown":
+                                st.error(t["error_unknown"].format(e=event.get("error_details", "")))
+                            else:
+                                st.error(t[event["error_key"]])
+                        else:
+                            st.error(f"⚠️ {content}")
                         break
                         
                     if step == "complete":
@@ -590,17 +596,30 @@ with tab1:
                     response_placeholder = st.empty()
                     full_response = ""
                     
-                    for chunk in answer_followup_stream(
-                        context=st.session_state.current_rag_context,
-                        chat_history=hist_text,
-                        question=follow_up_q,
-                        language_instruction=t["prompt_instruction"]
-                    ):
-                        full_response += chunk
-                        response_placeholder.markdown(full_response + "▌")
-                    
-                    response_placeholder.markdown(full_response)
-                    st.session_state.chat_history_tab1.append({"role": "assistant", "content": full_response})
+                    try:
+                        for chunk in answer_followup_stream(
+                            context=st.session_state.current_rag_context,
+                            chat_history=hist_text,
+                            question=follow_up_q,
+                            language_instruction=t["prompt_instruction"]
+                        ):
+                            full_response += chunk
+                            response_placeholder.markdown(full_response + "▌")
+                        
+                        response_placeholder.markdown(full_response)
+                        st.session_state.chat_history_tab1.append({"role": "assistant", "content": full_response})
+                    except Exception as e:
+                        error_msg = str(e).lower()
+                        if "429" in error_msg or "quota" in error_msg or "resourceexhausted" in error_msg:
+                            st.error(t["error_quota"])
+                        elif "400" in error_msg or "invalidargument" in error_msg or "context" in error_msg or "too long" in error_msg:
+                            st.error(t["error_context"])
+                        elif "401" in error_msg or "403" in error_msg or "unauthenticated" in error_msg:
+                            st.error(t["error_auth"])
+                        elif "timeout" in error_msg or "deadlineexceeded" in error_msg:
+                            st.error(t["error_timeout"])
+                        else:
+                            st.error(t["error_unknown"].format(e=e))
 
 # ==========================================
 # TAB 2: Phân tích Tài liệu (Upload & Q&A) – Hỗ trợ nhiều file

@@ -54,23 +54,21 @@ def generate_response_stream(prompt: str, temperature: float = TEMPERATURE):
     """
     Gọi Gemini API với streaming response.
     Yields từng phần text.
+    Nếu có lỗi, Exception sẽ được raise lên cấp trên để xử lý.
     """
     client = get_client()
     
-    try:
-        response = client.models.generate_content_stream(
-            model=MODEL_NAME,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=temperature,
-                max_output_tokens=MAX_OUTPUT_TOKENS,
-            )
+    response = client.models.generate_content_stream(
+        model=MODEL_NAME,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            temperature=temperature,
+            max_output_tokens=MAX_OUTPUT_TOKENS,
         )
-        for chunk in response:
-            if chunk.text:
-                yield chunk.text
-    except Exception as e:
-        yield f"\n\n❌ Lỗi khi tạo phản hồi: {e}"
+    )
+    for chunk in response:
+        if chunk.text:
+            yield chunk.text
 
 
 # ── Drug Interaction Prompt ─────────────────────────────
