@@ -48,16 +48,12 @@ LANG = {
         "summary_title": "Tóm Tắt & Khuyến Nghị",
         "result_success": "✅ Hoàn thành phân tích!",
 
-        # ── Tab 1: Report download ──
-        "btn_dl_md": "📥 Tải Báo Cáo (Markdown)",
-        "btn_dl_docx": "📥 Tải Báo Cáo (DOCX)",
-        "report_title": "Báo Cáo Chẩn Đoán Phân Biệt",
-        "report_title_short": "Báo Cáo CĐPB",
-        "report_specialty": "Chuyên khoa",
-        "report_case_info": "Ca Bệnh",
-        "report_ddx": "Chẩn Đoán Phân Biệt",
-        "report_summary": "Tóm Tắt & Khuyến Nghị",
         "disclaimer": "Kết quả chỉ mang tính tham khảo. Cần bác sĩ chuyên khoa xem xét trước khi áp dụng.",
+
+        # ── Follow-up Chat ──
+        "chat_followup_title": "💬 Thảo luận thêm về ca bệnh",
+        "chat_followup_info": "Bác sĩ có thể đặt thêm câu hỏi về phác đồ, liều dùng hoặc các tình huống lâm sàng liên quan bên dưới.",
+        "chat_followup_placeholder": "Hỏi thêm về ca bệnh này (VD: Giải thích kỹ phần xử trí...)",
 
         # ── Tab 2: Document Q&A ──
         "doc_upload_title": "📄 Tải lên Tài liệu Phác đồ Cá nhân hóa",
@@ -155,6 +151,11 @@ LANG = {
         "report_ddx": "Differential Diagnosis",
         "report_summary": "Summary & Recommendations",
         "disclaimer": "This tool is for reference only and does not replace the clinical judgment of a physician.",
+
+        # ── Follow-up Chat ──
+        "chat_followup_title": "💬 Case Follow-up Discussion",
+        "chat_followup_info": "You can ask additional questions about guidelines, dosage, or clinical scenarios below.",
+        "chat_followup_placeholder": "Ask something more about this case (E.g.: Explain the treatment part...)",
 
         # ── Tab 2: Document Q&A ──
         "doc_upload_title": "📄 Upload Personalized Protocol Documents",

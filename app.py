@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.diagnosis_chain import run_diagnosis_chain, run_diagnosis_chain_stream
-from src.llm_agent import answer_document_question_stream
+from src.llm_agent import answer_document_question_stream, answer_followup_stream
 from scripts.parse_docs import extract_text_from_pdf, extract_text_from_docx
 from src.i18n import LANG
 from src.docx_exporter import markdown_to_docx_bytes
@@ -279,6 +279,12 @@ with tab1:
         st.session_state.age = 0
     if "sex" not in st.session_state:
         st.session_state.sex = t['sex_options'][0]
+    if "chat_history_tab1" not in st.session_state:
+        st.session_state.chat_history_tab1 = []
+    if "analysis_done" not in st.session_state:
+        st.session_state.analysis_done = False
+    if "current_rag_context" not in st.session_state:
+        st.session_state.current_rag_context = ""
 
     # Callback load ca bệnh ngẫu nhiên từ ngân hàng
     def load_random_sample(category: str):
@@ -287,6 +293,7 @@ with tab1:
         st.session_state.specialty = case_data["specialty"]
         st.session_state.age = case_data["age"]
         st.session_state.sex = case_data["sex"]
+        st.session_state.analysis_done = False
     
     # Render nút ca mẫu — Hàng 1: 3 ô đơn khoa
     row1_cols = st.columns(3)
@@ -438,10 +445,21 @@ with tab1:
                         progress_bar.progress(100, text=t.get('result_success', "Hoàn thành!"))
                         time.sleep(0.5)
                         progress_bar.empty()
+                        
+                        # Khởi tạo trạng thái cho Chat Follow-up
+                        st.session_state.analysis_done = True
+                        st.session_state.current_rag_context = sources_text_buffer
+                        st.session_state.chat_history_tab1 = [] # Reset chat cũ
+                        
+                        # Thêm kết quả ban đầu vào lịch sử chat làm ngữ cảnh
+                        initial_report = f"**Chẩn đoán phân biệt:**\n\n{ddx_text_buffer}\n\n**Tóm tắt & Khuyến nghị:**\n\n{summary_text_buffer}"
+                        st.session_state.chat_history_tab1.append({"role": "assistant", "content": initial_report})
+                        
                         st.success(t["result_success"])
                         
                     elif step == "error":
                         progress_bar.empty()
+                        st.session_state.analysis_done = False
                         st.error(f"⚠️ {content}")
                         break
                         
@@ -543,6 +561,46 @@ with tab1:
                 # Log nguyên nhân thật ra console, hiện thông báo dễ hiểu cho user
                 print(f"Lỗi tạo DOCX: {e}")
                 st.error("Rất tiếc, không thể tạo file DOCX lúc này do cấu trúc văn bản quá phức tạp. Vui lòng sử dụng bản Markdown hoặc thử lại sau.")
+
+        # ── PHẦN CHAT FOLLOW-UP (HYBRID) ──────────────────────────
+        if st.session_state.get("analysis_done"):
+            st.divider()
+            st.markdown(f"### {t['chat_followup_title']}")
+            st.info(t["chat_followup_info"])
+
+            # Hiển thị lịch sử chat (trừ đoạn báo cáo đầu tiên vì đã hiện phía trên rồi)
+            for i, msg in enumerate(st.session_state.chat_history_tab1):
+                if i == 0: continue # Bỏ qua report đầu tiên để tránh trùng lặp nội dung Card phía trên
+                with st.chat_message(msg["role"]):
+                    st.markdown(msg["content"])
+
+            # Chat input cho câu hỏi tiếp theo
+            follow_up_q = st.chat_input(t["chat_followup_placeholder"], key="follow_up_q")
+
+            if follow_up_q:
+                # Hiện câu hỏi người dùng
+                with st.chat_message("user"):
+                    st.markdown(follow_up_q)
+                st.session_state.chat_history_tab1.append({"role": "user", "content": follow_up_q})
+
+                # Tạo phản hồi AI từ context đã có
+                with st.chat_message("assistant"):
+                    # Gom lịch sử thành text
+                    hist_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.chat_history_tab1[:-1]])
+                    response_placeholder = st.empty()
+                    full_response = ""
+                    
+                    for chunk in answer_followup_stream(
+                        context=st.session_state.current_rag_context,
+                        chat_history=hist_text,
+                        question=follow_up_q,
+                        language_instruction=t["prompt_instruction"]
+                    ):
+                        full_response += chunk
+                        response_placeholder.markdown(full_response + "▌")
+                    
+                    response_placeholder.markdown(full_response)
+                    st.session_state.chat_history_tab1.append({"role": "assistant", "content": full_response})
 
 # ==========================================
 # TAB 2: Phân tích Tài liệu (Upload & Q&A) – Hỗ trợ nhiều file

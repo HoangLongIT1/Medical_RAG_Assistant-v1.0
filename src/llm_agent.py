@@ -169,6 +169,29 @@ và KHUYẾN NGHỊ cho bác sĩ điều trị.
 Ngắn gọn, thực tiễn lâm sàng."""
 
 
+FOLLOWUP_CHAT_PROMPT = """Bạn là trợ lý bác sĩ đang trao đổi chuyên môn về một ca bệnh cụ thể.
+Dựa vào (1) Thông tin ca bệnh, (2) Lịch sử cuộc trò truyện và (3) Các đoạn Phác đồ Y tế đã tra cứu được,
+hãy trả lời câu hỏi tiếp theo của bác sĩ một cách chuyên nghiệp, ngắn gọn và Tuyệt đối an toàn.
+
+{language_instruction}
+
+**Thông tin ca bệnh & Phác đồ liên quan:**
+{context}
+
+**Lịch sử trò chuyện:**
+{chat_history}
+
+**Câu hỏi mới của bác sĩ:**
+{question}
+
+**Yêu cầu quan trọng:**
+1. Trả lời dựa trên chứng cứ từ Phác đồ đã cung cấp. Nếu phác đồ không đề cập, hãy nói rõ "Phác đồ hiện tại không có thông tin này".
+2. KHÔNG tự bịa ra kiến thức y khoa nằm ngoài tài liệu.
+3. Luôn giữ thái độ hỗ trợ, chuyên sâu nhưng khiêm tốn.
+4. Nhắc nhở bác sĩ rằng đây chỉ là thông tin hỗ trợ, quyết định cuối cùng thuộc về bác sĩ lâm sàng.
+"""
+
+
 DOCUMENT_QA_PROMPT = """Bạn là một chuyên gia phân tích tài liệu y khoa.
 Nhiệm vụ của bạn là trả lời các câu hỏi dựa trên 2 nguồn tài liệu:
 1. Tài liệu do người dùng tải lên (Nguồn A).
@@ -203,6 +226,19 @@ def answer_document_question_stream(local_context: str, global_context: str, que
     full_prompt = DOCUMENT_QA_PROMPT.format(
         document_context=local_context, 
         global_context=global_context,
+        question=question,
+        language_instruction=language_instruction
+    )
+    return generate_response_stream(full_prompt, temperature)
+
+
+def answer_followup_stream(context: str, chat_history: str, question: str, language_instruction: str = "", temperature: float = 0.3):
+    """
+    Tạo phản hồi dạng stream cho Follow-up Chat trong Tab 1.
+    """
+    full_prompt = FOLLOWUP_CHAT_PROMPT.format(
+        context=context,
+        chat_history=chat_history,
         question=question,
         language_instruction=language_instruction
     )
