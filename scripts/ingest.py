@@ -102,17 +102,14 @@ def ingest_documents(target_file=None):
     print("\n🔍 Kiểm tra dữ liệu cũ trong Database...")
     try:
         existing_data = vectorstore.get()
-        existing_sources = set()
-        if existing_data and 'metadatas' in existing_data:
-            for meta in existing_data['metadatas']:
-                if meta and 'source' in meta:
-                    existing_sources.add(meta['source'])
+        existing_texts = set()
         
-        if existing_sources:
-            print(f"   Tìm thấy {len(existing_sources)} file đã nạp trước đó: {list(existing_sources)[:5]}...")
+        if existing_data and 'documents' in existing_data and existing_data['documents']:
+            existing_texts = set(existing_data['documents'])
+            print(f"   Tìm thấy {len(existing_texts)} chunks đã được nạp trước đó.")
             
-            # Lọc danh sách documents: chỉ giữ lại những mảnh (chunk) thuộc file chưa có trong DB
-            new_documents = [doc for doc in documents if doc.metadata['source'] not in existing_sources]
+            # Lọc danh sách documents: chỉ giữ lại những mảnh (chunk) chưa có nội dung trong DB
+            new_documents = [doc for doc in documents if doc.page_content not in existing_texts]
             
             skipped_count = len(documents) - len(new_documents)
             if skipped_count > 0:
@@ -121,7 +118,7 @@ def ingest_documents(target_file=None):
             else:
                 print("   🆕 Tất cả data là mới, tiến hành nạp toàn bộ.")
         else:
-            print("   🆕 Database trống hoặc không tìm thấy metadata, nạp toàn bộ.")
+            print("   🆕 Database trống hoặc không tìm thấy chunks cũ, nạp toàn bộ.")
             
     except Exception as e:
         print(f"   ⚠️ Lỗi khi kiểm tra DB cũ (có thể DB chưa có hoặc format cũ): {e}")

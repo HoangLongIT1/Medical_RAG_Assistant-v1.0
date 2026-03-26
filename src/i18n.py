@@ -29,6 +29,7 @@ LANG = {
         "cardiology": "Tim mạch",
         "respiratory": "Hô hấp",
         "endocrinology": "Nội tiết - Chuyển hóa",
+        "odontology": "Răng Hàm Mặt",
         "unspecified_sex": "Chưa chọn",
 
         # ── Tab 1: Errors ──
@@ -136,6 +137,7 @@ LANG = {
         "cardiology": "Cardiology",
         "respiratory": "Respiratory",
         "endocrinology": "Endocrinology",
+        "odontology": "Odonto-Stomatology",
         "unspecified_sex": "Unspecified",
 
         # ── Tab 1: Errors ──

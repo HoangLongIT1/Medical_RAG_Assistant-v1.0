@@ -406,10 +406,57 @@ SAMPLE_CASE_BANK = {
             "question": "👉 Suy đa cơ quan tận cùng (Suy tim + Suy gan thận cấp). Có chỉ định lọc máu liên tục CRT cho đối tượng rủi ro tuổi?"
         }
     ],
+    "🦷 Răng Hàm Mặt": [
+        {
+            "name": "Trần Văn T", "age": 28, "sex": "Nam", "job": "Kỹ sư IT", "specialty": "RĂNG HÀM MẶT",
+            "reason": "Đau nhức vùng góc hàm phải lan lên tai, há miệng hạn chế.",
+            "history": "- Đau âm ỉ 3 ngày nay, tăng dần. Nay sốt nhẹ 37.8 độ, hơi thở có mùi hôi.",
+            "past_medical": "- Khỏe mạnh, không dị ứng thuốc.",
+            "clinical": "**Tại chỗ:** Vùng lợi trùm răng 48 sưng đỏ, có mủ rỉ ra khi ấn nhẹ. Răng 48 mọc lệch trong xương.\n**Hệ thống:** Hạch dưới hàm phải sưng đau.",
+            "subclinical": "- **X-quang:** Răng 48 mọc lệch 90 độ, đâm vào chân răng 47.",
+            "question": "👉 Viêm lợi trùm biến chứng áp xe do răng khôn 48 mọc lệch. Phác đồ kháng sinh và chỉ định nhổ răng theo BYT?"
+        },
+        {
+            "name": "Lý Thị H", "age": 35, "sex": "Nữ", "job": "Giáo viên", "specialty": "RĂNG HÀM MẶT",
+            "reason": "Răng số 26 đau nhức dữ dội, đau giật theo mạch đập, tăng nhiều về đêm.",
+            "history": "- Đau kịch phát kéo dài 15-20 phút, kích thích nóng lạnh làm đau dữ dội hơn.",
+            "past_medical": "- Tiền sử trám răng sâu 1 năm trước.",
+            "clinical": "**Tại chỗ:** Răng 26 có lỗ sâu lớn phía gần, gõ dọc đau chói. Niêm mạc ngách lợi tương ứng hơi nề.",
+            "subclinical": "- **X-quang:** Vùng thấu quang rộng sát buồng tủy răng 26, chưa có tổn thương vùng quanh chóp.",
+            "question": "👉 Viêm tủy cấp răng 26. Quy trình xử trí cấp cứu giảm đau và các bước điều trị tủy tiếp theo?"
+        },
+        {
+            "name": "Nguyễn Minh K", "age": 52, "sex": "Nam", "job": "Kinh doanh", "specialty": "RĂNG HÀM MẶT",
+            "reason": "Răng lung lay nhiều, chảy máu chân răng khi đánh răng và ăn uống.",
+            "history": "- Tình trạng kéo dài 2 năm, gần đây răng cửa dưới lung lay khiến việc ăn nhai khó khăn.",
+            "past_medical": "- Đái tháo đường type 2 (HbA1c 7.5%).",
+            "clinical": "**Tại chỗ:** Cao răng dưới lợi dày đặc, túi nha chu sâu 6-7mm. Răng 31, 32 lung lay độ 3. Lợi sưng nề, tụt lợi toàn hàm.",
+            "subclinical": "- **X-quang:** Tiêu xương ổ răng ngang mức 1/2-2/3 chân răng toàn hàm.",
+            "question": "👉 Viêm nha chu mạn tính tiến triển trên bệnh nhân Đái tháo đường. Kế hoạch điều trị bảo tồn và kiểm soát nhiễm khuẩn?"
+        },
+        {
+            "name": "Đặng Bảo L", "age": 19, "sex": "Nữ", "job": "Sinh viên", "specialty": "RĂNG HÀM MẶT",
+            "reason": "Sưng nề vùng mặt bên trái, đau nhức liên tục, răng 36 lung lay.",
+            "history": "- Xuất hiện sau khi răng 36 bị sâu vỡ lớn lâu ngày không điều trị. Sưng lan xuống dưới hàm.",
+            "past_medical": "- Không có tiền sử bệnh lý đặc biệt.",
+            "clinical": "**Tại chỗ:** Khối sưng vùng lợi ngách hành lang răng 36, ấn có cảm giác phập phều, đau chói.",
+            "subclinical": "- **X-quang:** Vùng thấu quang quanh chóp răng 36 đường kính 5mm, giới hạn khá rõ.",
+            "question": "👉 Áp xe quanh chóp răng cấp tính từ viêm quanh chóp mạn. Chỉ định rạch dẫn lưu mủ và bảo tồn hay nhổ bỏ răng?"
+        },
+        {
+            "name": "Vũ Huy H", "age": 42, "sex": "Nam", "job": "Công nhân", "specialty": "RĂNG HÀM MẶT - CHẤN THƯƠNG",
+            "reason": "Sưng đau vùng cằm, cắn hai hàm không khít sau tai nạn giao thông.",
+            "history": "- Bị té ngã đập cằm xuống đường cách đây 2 giờ. Có chảy máu vùng miệng.",
+            "past_medical": "- Khỏe mạnh.",
+            "clinical": "**Tại chỗ:** Biến dạng vùng cằm, sưng nề tím tái. Có bậc thang xương rõ rệt vùng góc hàm trái. Chảy máu kẽ răng 33-34.",
+            "subclinical": "- **X-quang:** Đường gãy xương hàm dưới vùng góc hàm trái và vùng cằm phải. Di lệch nhiều.",
+            "question": "👉 Gãy xương hàm dưới phức tạp. Các bước sơ cứu, cố định tạm thời và phác đồ phẫu thuật kết hợp xương?"
+        }
+    ],
 }
 
 # ── Danh sách nhóm theo thứ tự hiển thị ─────────────────────
-CATEGORY_ORDER_ROW1 = ["🫀 Tim mạch", "🫁 Hô hấp", "🔬 Nội tiết"]
+CATEGORY_ORDER_ROW1 = ["🫀 Tim mạch", "🫁 Hô hấp", "🔬 Nội tiết", "🦷 Răng Hàm Mặt"]
 CATEGORY_ORDER_ROW2 = ["🫀+🫁 Tim + Hô hấp", "🫀+🔬 Tim + Nội tiết", "🫁+🔬 Hô hấp + Nội tiết", "🫀🫁🔬 Cả 3 khoa"]
 
 def get_random_case(category: str) -> dict:

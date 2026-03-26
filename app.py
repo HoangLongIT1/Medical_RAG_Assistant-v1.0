@@ -295,8 +295,8 @@ with tab1:
         st.session_state.sex = case_data["sex"]
         st.session_state.analysis_done = False
     
-    # Render nút ca mẫu — Hàng 1: 3 ô đơn khoa
-    row1_cols = st.columns(3)
+    # Render nút ca mẫu — Hàng 1: 4 ô đơn khoa
+    row1_cols = st.columns(len(CATEGORY_ORDER_ROW1))
     for idx, category in enumerate(CATEGORY_ORDER_ROW1):
         row1_cols[idx].button(
             category,
@@ -331,7 +331,7 @@ with tab1:
         
         col_a, col_b, col_c = st.columns(3)
         with col_a:
-            specialty_opts = [t["auto_detect_specialty"], t["cardiology"], t["respiratory"], t["endocrinology"]]
+            specialty_opts = [t["auto_detect_specialty"], t["cardiology"], t["respiratory"], t["endocrinology"], t["odontology"]]
             specialty = st.selectbox(t["specialty_label"], specialty_opts, key="specialty")
         with col_b:
             age = st.number_input(t["age_label"], min_value=0, max_value=120, key="age")
