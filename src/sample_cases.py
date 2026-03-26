@@ -8,42 +8,43 @@ Chi tiết, sắc bén, bám sát thực tế phòng cấp cứu và phòng khá
 import random
 
 def format_case(case_data: dict) -> str:
-    template = f"""**Họ tên:** {case_data.get('name', 'Nguyễn Văn A')}
-**Giới tính:** {case_data['sex']}
-**Tuổi:** {case_data['age']}
-**Nghề nghiệp:** {case_data.get('job', 'Tự do')}
-**Ngày khám:** 23/03/2026
+    name = case_data.get('name', 'Bệnh nhân')
+    sex = "nam giới" if case_data['sex'].lower() == "nam" else "nữ giới"
+    age = case_data['age']
+    job = case_data.get('job', 'Lao động tự do').lower()
+    
+    pronoun = "Bệnh nhân"
+    if age >= 60:
+        pronoun = "Ông" if sex == "nam giới" else "Bà"
+    elif age <= 15: 
+        pronoun = "Cháu"
+    elif sex == "nam giới": 
+        pronoun = "Anh"
+    else: 
+        pronoun = "Chị"
 
----
+    reason = case_data['reason'].strip()
+    if reason and reason[0].isupper():
+        reason = reason[0].lower() + reason[1:]
 
-### **1. Lý do nhập viện**
-{case_data['reason']}
+    history = case_data['history'].strip(" -")
+    past_medical = case_data['past_medical'].strip(" -")
+    
+    clinical = case_data['clinical'].replace('**', '').replace('\n', ' ').strip()
+    subclinical = case_data['subclinical'].replace('**', '').replace('\n', '; ').replace('- ', '').strip()
+    question = case_data['question'].replace('👉', '').strip()
 
----
+    template = f"""{pronoun} {name}, {sex}, {age} tuổi, công việc hiện tại là {job}, đến khám tại viện vào ngày 26/03/2026. 
 
-### **2. Bệnh sử**
-{case_data['history']}
+{pronoun} nhập viện với lý do chính là {reason}
 
----
+Theo bệnh sử, {history} Về tiền sử y khoa, {pronoun.lower()} có ghi nhận: {past_medical}
 
-### **3. Tiền sử**
-{case_data['past_medical']}
+Qua quá trình thăm khám lâm sàng tuyến đầu, bác sĩ điều trị ghi nhận các dấu hiệu: {clinical} 
 
----
+Kết quả cận lâm sàng được thực hiện cho thấy: {subclinical}
 
-### **4. Khám lâm sàng**
-{case_data['clinical']}
-
----
-
-### **5. Cận lâm sàng**
-{case_data['subclinical']}
-
----
-
-### **6. Câu hỏi / Xử trí lâm sàng**
-{case_data['question']}
-"""
+Dựa trên toàn bộ thông tin bệnh án này, yêu cầu hệ thống RAG phân tích: {question}"""
     return template
 
 SAMPLE_CASE_BANK = {
