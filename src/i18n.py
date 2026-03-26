@@ -6,7 +6,7 @@ Chứa tất cả các chuỗi giao diện và nhãn dùng trong app.py
 LANG = {
     "vi": {
         # ── App Header & Tabs ──
-        "app_title": "🏥 Trợ Lý AI Y Tế Toàn Diện",
+        "app_title": "🏥 Med-Helper AI: Trợ Lý Y Tế Toàn Diện",
         "app_subtitle": "Hỗ trợ chẩn đoán phân biệt & Phân tích tài liệu phác đồ",
         "tab_rag": "🔍 Hỗ Trợ Chẩn Đoán",
         "tab_doc": "📑 Phân Tích Phác Đồ",
@@ -114,7 +114,7 @@ LANG = {
 
     "en": {
         # ── App Header & Tabs ──
-        "app_title": "🏥 Comprehensive Medical AI Assistant",
+        "app_title": "🏥 Med-Helper AI: Comprehensive Medical Assistant",
         "app_subtitle": "Differential Diagnosis Support & Protocol Document Analysis",
         "tab_rag": "🔍 Diagnosis Support",
         "tab_doc": "📑 Protocol Analysis",
