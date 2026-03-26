@@ -237,12 +237,12 @@ def run_diagnosis_chain_stream(
         # Bắt các lỗi phổ biến từ Gemini/API và phân loại thành mã lỗi (error_key)
         error_msg = str(e).lower()
         if "429" in error_msg or "quota" in error_msg or "resourceexhausted" in error_msg:
-            yield {"step": "error", "error_key": "error_quota"}
+            yield {"step": "error", "error_key": "error_quota", "content": ""}
         elif "400" in error_msg or "invalidargument" in error_msg or "context" in error_msg or "too long" in error_msg:
-            yield {"step": "error", "error_key": "error_context"}
+            yield {"step": "error", "error_key": "error_context", "content": ""}
         elif "401" in error_msg or "403" in error_msg or "unauthenticated" in error_msg:
-            yield {"step": "error", "error_key": "error_auth"}
+            yield {"step": "error", "error_key": "error_auth", "content": ""}
         elif "timeout" in error_msg or "deadlineexceeded" in error_msg:
-            yield {"step": "error", "error_key": "error_timeout"}
+            yield {"step": "error", "error_key": "error_timeout", "content": ""}
         else:
-            yield {"step": "error", "error_key": "error_unknown", "error_details": str(e)}
+            yield {"step": "error", "error_key": "error_unknown", "error_details": str(e), "content": str(e)}

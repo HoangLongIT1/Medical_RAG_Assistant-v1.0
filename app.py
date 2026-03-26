@@ -368,8 +368,8 @@ with tab1:
                 step4_text_placeholder = None
                 
                 for event in run_diagnosis_chain_stream(enriched_input, selected_specialty, language_instruction=t["prompt_instruction"]):
-                    step = event['step']
-                    content = event['content']
+                    step = event.get('step', 'unknown')
+                    content = event.get('content', '')
                     
                     if step == "blocked":
                         st.markdown(f'<div class="safety-blocked">{content}</div>', unsafe_allow_html=True)
