@@ -184,12 +184,16 @@ def run_diagnosis_chain_stream(
         documents = retrieve_context(query=search_query, specialty=specialty, k=5)
         context_text = format_context(documents)
         
+        seen_sources = set()
         sources_info = []
         for doc in documents:
             source_name = doc.metadata.get('source', 'N/A')
             spec = doc.metadata.get('specialty', '')
+            key = f"{source_name}_{spec}"
             
-            sources_info.append(f"- **{source_name}** ({spec})")
+            if key not in seen_sources:
+                sources_info.append(f"- **{source_name}** ({spec})")
+                seen_sources.add(key)
             
         sources_text = "\n".join(sources_info) if sources_info else "Không tìm thấy tài liệu liên quan."
         yield {"step": "step2_done", "content": sources_text}

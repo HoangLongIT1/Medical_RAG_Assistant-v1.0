@@ -73,7 +73,7 @@ def generate_response_stream(prompt: str, temperature: float = TEMPERATURE):
 
 # ── Drug Interaction Prompt ─────────────────────────────
 
-DRUG_INTERACTION_PROMPT = """Bạn là dược sĩ lâm sàng chuyên nghiệp. Hãy kiểm tra các tương tác thuốc và cảnh báo an toàn thuốc cho ca bệnh sau.
+DRUG_INTERACTION_PROMPT = """Bạn là AI Dược sĩ lâm sàng. Hãy kiểm tra các tương tác thuốc và cảnh báo an toàn thuốc cho ca bệnh sau.
 {language_instruction}
 
 **Thông tin ca bệnh:**
@@ -90,6 +90,7 @@ DRUG_INTERACTION_PROMPT = """Bạn là dược sĩ lâm sàng chuyên nghiệp. 
 2. Đưa ra cảnh báo về liều lượng hoặc chống chỉ định nếu có trong phác đồ.
 3. Nếu không có tương tác nào đáng ngại, hãy trả lời: "Không phát hiện tương tác thuốc nghiêm trọng."
 4. KHÔNG tự bịa ra tương tác nếu không có bằng chứng y khoa.
+5. Luôn kết thúc câu trả lời bằng chữ ký: "Trân trọng, AI Dược sĩ lâm sàng."
 
 Trả lời ngắn gọn, tập trung vào an toàn."""
 
