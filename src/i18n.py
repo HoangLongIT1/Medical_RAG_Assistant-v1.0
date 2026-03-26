@@ -8,8 +8,8 @@ LANG = {
         # ── App Header & Tabs ──
         "app_title": "🏥 Trợ Lý AI Y Tế Toàn Diện",
         "app_subtitle": "Hỗ trợ chẩn đoán phân biệt & Phân tích tài liệu phác đồ",
-        "tab_rag": "🔍 Hỗ Trợ Chẩn Đoán (Kho Dữ Liệu)",
-        "tab_doc": "📑 Phân Tích Phác Đồ (File Tải Lên)",
+        "tab_rag": "🔍 Hỗ Trợ Chẩn Đoán",
+        "tab_doc": "📑 Phân Tích Phác Đồ",
         "tab_dash": "📊 Dashboard Thống Kê",
 
         # ── Tab 1: Form nhập liệu ──
@@ -116,8 +116,8 @@ LANG = {
         # ── App Header & Tabs ──
         "app_title": "🏥 Comprehensive Medical AI Assistant",
         "app_subtitle": "Differential Diagnosis Support & Protocol Document Analysis",
-        "tab_rag": "🔍 Diagnosis Support (Knowledge Base)",
-        "tab_doc": "📑 Protocol Analysis (File Upload)",
+        "tab_rag": "🔍 Diagnosis Support",
+        "tab_doc": "📑 Protocol Analysis",
         "tab_dash": "📊 Statistical Dashboard",
 
         # ── Tab 1: Form ──

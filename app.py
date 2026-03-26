@@ -305,17 +305,6 @@ with tab1:
             key=f"sample_r1_{idx}",
             use_container_width=True,
         )
-    
-    # Render nút ca mẫu — Hàng 2: 4 ô hỗn hợp
-    row2_cols = st.columns(4)
-    for idx, category in enumerate(CATEGORY_ORDER_ROW2):
-        row2_cols[idx].button(
-            category,
-            on_click=load_random_sample,
-            args=(category,),
-            key=f"sample_r2_{idx}",
-            use_container_width=True,
-        )
 
     with st.container(border=True):
         st.markdown(f"<h3 style='margin-top:0; color:#0f172a;'>{t['clinical_info']}</h3>", unsafe_allow_html=True)
