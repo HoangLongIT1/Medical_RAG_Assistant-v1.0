@@ -424,10 +424,10 @@ SAMPLE_CASE_BANK = {
 CATEGORY_ORDER_ROW1 = ["🫀 Tim mạch", "🫁 Hô hấp", "🔬 Nội tiết", "🦷 Răng Hàm Mặt"]
 
 def get_random_case(category: str) -> dict:
-    \"\"\"
+    """
     Chọn ngẫu nhiên 1 ca bệnh từ nhóm chuyên khoa và tự động cấu trúc hóa
     nội dung ca bệnh thành Bệnh án Nội khoa.
-    \"\"\"
+    """
     cases = SAMPLE_CASE_BANK.get(category, [])
     if not cases:
         return {"text": "", "age": 0, "sex": "Nam", "specialty": "Tự động nhận diện"}

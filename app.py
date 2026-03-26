@@ -22,7 +22,7 @@ from src.llm_agent import answer_document_question_stream, answer_followup_strea
 from scripts.parse_docs import extract_text_from_pdf, extract_text_from_docx
 from src.i18n import LANG
 from src.docx_exporter import markdown_to_docx_bytes
-from src.sample_cases import SAMPLE_CASE_BANK, CATEGORY_ORDER_ROW1, CATEGORY_ORDER_ROW2, get_random_case
+from src.sample_cases import SAMPLE_CASE_BANK, CATEGORY_ORDER_ROW1, get_random_case
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
